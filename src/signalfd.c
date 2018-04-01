@@ -2,6 +2,7 @@
 #undef read
 #undef close
 
+#include <sys/event.h>
 #include <sys/types.h>
 
 #include <sys/event.h>
@@ -14,6 +15,8 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+
+#define _SIG_MAXSIG 128
 
 struct signalfd_context {
 	int fd;

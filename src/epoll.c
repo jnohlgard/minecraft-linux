@@ -9,25 +9,24 @@
 #include <stdio.h>
 #include <time.h>
 
+#define EV_FORCEONESHOT 0x0100
+
 int
 epoll_create(int size)
 {
-	(void)size;
-
-	errno = EINVAL;
-	return -1;
-}
-
-int
-epoll_create1(int flags)
-{
-	if (flags != EPOLL_CLOEXEC) {
-		errno = EINVAL;
-		return -1;
-	}
-
 	return kqueue();
 }
+
+// int
+// epoll_create1(int flags)
+// {
+// 	if (flags != EPOLL_CLOEXEC) {
+// 		errno = EINVAL;
+// 		return -1;
+// 	}
+//
+// 	return kqueue();
+// }
 
 static int poll_fd = -1;
 static int poll_epoll_fd = -1;
@@ -286,7 +285,7 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 	}
 
 	if (op != EPOLL_CTL_DEL && is_not_yet_connected_stream_socket(fd2)) {
-		EV_SET(&kev[0], fd2, EVFILT_READ, EV_ENABLE | EV_FORCEONESHOT,
+		EV_SET(&kev[0], fd2, EVFILT_READ, EV_ENABLE | EV_FORCEONESHOT, // EV_FORCEONESHOT
 		    0, 0, ev->data.ptr);
 		if (kevent(fd, kev, 1, NULL, 0, NULL) < 0) {
 			return -1;
@@ -334,9 +333,11 @@ epoll_pwait(
 int
 epoll_wait(int fd, struct epoll_event *ev, int cnt, int to)
 {
-	if (cnt < 1 || cnt > 32) {
+	if (cnt < 1) {
 		errno = EINVAL;
 		return -1;
+	} else if (cnt > 32) {
+		cnt = 32;
 	}
 
 	if (poll_fd != -1 && fd == poll_epoll_fd) {

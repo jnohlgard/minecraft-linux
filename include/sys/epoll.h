@@ -57,7 +57,7 @@ __attribute__((packed))
 ;
 
 int epoll_create(int /*size*/);
-int epoll_create1(int /*flags*/);
+// int epoll_create1(int /*flags*/);
 int epoll_ctl(
     int /*fd*/, int /*op*/, int /*fd2*/, struct epoll_event * /*ev*/);
 int epoll_wait(

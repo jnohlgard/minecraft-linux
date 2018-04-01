@@ -13,11 +13,11 @@ extern "C" {
 
 #define TFD_TIMER_ABSTIME 1
 
-struct itimerspec;
+// struct itimerspec;
 
-int timerfd_create(int /*clockid*/, int /*flags*/);
-int timerfd_settime(int /*fd*/, int /*flags*/,
-    const struct itimerspec * /*new*/, struct itimerspec * /*old*/);
+// int timerfd_create(int /*clockid*/, int /*flags*/);
+// int timerfd_settime(int /*fd*/, int /*flags*/,
+    // const struct itimerspec * /*new*/, struct itimerspec * /*old*/);
 #if 0
 int timerfd_gettime(int, struct itimerspec *);
 #endif
