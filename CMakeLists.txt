@@ -16,7 +16,7 @@ endif()
 
 add_library(eglut ${EGLUT_SOURCES})
 target_include_directories(eglut PUBLIC include/)
-target_link_libraries(eglut PUBLIC ${PNG_LIBRARIES})
+target_link_libraries(eglut PUBLIC ${PNG_LIBRARIES} EGL)
 
 if (EGLUT_USE_X11)
     target_link_libraries(eglut PUBLIC ${X11_X11_LIB})
