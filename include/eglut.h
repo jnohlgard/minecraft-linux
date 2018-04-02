@@ -26,6 +26,10 @@
 #ifndef EGLUT_H
 #define EGLUT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* used by eglutInitAPIMask */
 enum {
     EGLUT_OPENGL_BIT     = 0x1,
@@ -129,5 +133,9 @@ void eglutCloseWindowFunc(EGLUTcloseCB func);
 void eglutWarpMousePointer(int x, int y);
 void eglutSetMousePointerVisiblity(int visible);
 void eglutRequestPaste();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* EGLUT_H */
