@@ -5,7 +5,6 @@
 #include <sys/stat.h>
 #include <stdexcept>
 #include <cstring>
-#include "../../common/log.h"
 
 const std::string ZenityFilePicker::EXECUTABLE_PATH = "/usr/bin/zenity";
 
@@ -73,7 +72,7 @@ bool ZenityFilePicker::show() {
         close(pipes[PIPE_STDOUT][PIPE_READ]);
         close(pipes[PIPE_STDERR][PIPE_READ]);
         int r = execv(argvc[0], (char**) argvc.data());
-        Log::error("ZenityFilePicker", "Show: execv() error %i %s", r, strerror(errno));
+        printf("Show: execv() error %i %s", r, strerror(errno));
         close(STDOUT_FILENO);
         close(STDERR_FILENO);
         close(STDIN_FILENO);
@@ -99,10 +98,13 @@ bool ZenityFilePicker::show() {
         int status;
         waitpid(pid, &status, 0);
         status = WEXITSTATUS(status);
+
+        /*
         Log::trace("ZenityFilePicker", "Show: Status = %i", status);
 
         Log::trace("ZenityFilePicker", "Stdout = %s", outputStdOut.c_str());
         Log::trace("ZenityFilePicker", "Stderr = %s", outputStdErr.c_str());
+        */
 
         if (status == 0) {
             auto iof = outputStdOut.find('\n');

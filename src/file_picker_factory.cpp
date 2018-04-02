@@ -1,8 +1,8 @@
-#include "file_picker_factory.h"
+#include <file_picker_factory.h>
 
 #include <stdexcept>
 
-#ifdef USE_ZENITY
+#ifdef FILEPICKER_USE_ZENITY
 #include "file_picker_zenity.h"
 std::unique_ptr<FilePicker> FilePickerFactory::createFilePicker() {
     return std::unique_ptr<FilePicker>(new ZenityFilePicker());
