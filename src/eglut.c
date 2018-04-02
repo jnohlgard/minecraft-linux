@@ -300,9 +300,9 @@ eglutDestroyWindow(int win)
 }
 
 static void
-_eglutDefaultKeyboard(unsigned char key)
+_eglutDefaultKeyboard(char* key, int keyn)
 {
-    if (key == 27) {
+    if (keyn == 1 && key[0] == 27) {
         if (_eglut->current)
             eglutDestroyWindow(_eglut->current->index);
         eglutFini();
@@ -312,7 +312,7 @@ _eglutDefaultKeyboard(unsigned char key)
 }
 
 void*
-_eglutReadPNG(char *filename, unsigned int *width, unsigned int *height) {
+_eglutReadPNG(const char *filename, unsigned int *width, unsigned int *height) {
     FILE *file;
     char sig[8];
     int depth, colorType;

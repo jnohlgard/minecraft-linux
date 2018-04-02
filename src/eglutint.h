@@ -107,6 +107,6 @@ void
         _eglutNativeEventLoop(void);
 
 void*
-        _eglutReadPNG(char *filename, unsigned int *width, unsigned int *height);
+        _eglutReadPNG(const char *filename, unsigned int *width, unsigned int *height);
 
 #endif /* _EGLUTINT_H_ */
