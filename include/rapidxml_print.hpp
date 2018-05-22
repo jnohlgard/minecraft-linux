@@ -22,6 +22,8 @@ namespace rapidxml
 
     const int print_no_indenting = 0x1;   //!< Printer flag instructing the printer to suppress indenting of XML. See print() function.
 
+    const int print_no_empty_tags = 0x2;   //!< Printer flag instructing the printer to always create a closing tag. See print() function.
+
     ///////////////////////////////////////////////////////////////////////
     // Internal
 
@@ -278,7 +280,7 @@ namespace rapidxml
             out = print_attributes(out, node, flags);
             
             // If node is childless
-            if (node->value_size() == 0 && !node->first_node())
+            if ((node->value_size() == 0 && !node->first_node()) && !(flags & print_no_empty_tags))
             {
                 // Print childless node tag ending
                 *out = Ch('/'), ++out;
