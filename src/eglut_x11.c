@@ -440,10 +440,14 @@ void eglutSetMousePointerVisiblity(int visible) {
         Pixmap emptyBitmap = XCreateBitmapFromData(_eglut->native_dpy, _eglut->current->native.u.window, emptyData, 8, 8);
         Cursor cursor = XCreatePixmapCursor(_eglut->native_dpy, emptyBitmap, emptyBitmap, &black, &black, 0, 0);
         XDefineCursor(_eglut->native_dpy, _eglut->current->native.u.window, cursor);
+        XGrabPointer(_eglut->native_dpy, _eglut->current->native.u.window, True,
+                     PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
+                     GrabModeAsync, GrabModeAsync, None, cursor, CurrentTime);
         XFreeCursor(_eglut->native_dpy, cursor);
         XFreePixmap(_eglut->native_dpy, emptyBitmap);
     } else if (visible == EGLUT_POINTER_VISIBLE) {
         XUndefineCursor(_eglut->native_dpy, _eglut->current->native.u.window);
+        XUngrabPointer(_eglut->native_dpy, CurrentTime);
     }
 }
 
