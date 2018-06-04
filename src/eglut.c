@@ -35,6 +35,8 @@
 
 #include "eglutint.h"
 
+#include "xinput.h"
+
 static struct eglut_state _eglut_state = {
         .api_mask = EGLUT_OPENGL_ES1_BIT,
         .window_width = 300,
@@ -479,6 +481,13 @@ eglutMouseFunc(EGLUTmouseCB func)
 {
     struct eglut_window *win = _eglut->current;
     win->mouse_cb = func;
+}
+
+void
+eglutMouseRawFunc(EGLUTmouseRawCB func)
+{
+    struct eglut_window *win = _eglut->current;
+    win->mouse_raw_cb = func;
 }
 
 void

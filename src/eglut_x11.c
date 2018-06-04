@@ -25,13 +25,16 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/X.h>
 #include <X11/keysym.h>
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
+#include <X11/extensions/XInput2.h>
 
 #include "eglutint.h"
 #include "eglut_x11.h"
+#include "xinput.h"
 
 void
 _eglutNativeInitDisplay(void)
@@ -41,6 +44,8 @@ _eglutNativeInitDisplay(void)
         _eglutFatal("failed to initialize native display");
 
     _eglut->surface_type = EGL_WINDOW_BIT;
+
+    _eglutInitXinput();
 }
 
 void
@@ -49,6 +54,7 @@ _eglutNativeFiniDisplay(void)
     XCloseDisplay(_eglut->native_dpy);
     _eglut->native_dpy = NULL;
 }
+
 
 XIC x11_ic;
 
@@ -222,6 +228,8 @@ lookup_keysym(KeySym sym)
     return special;
 }
 
+int isRawMovementEnabled;
+
 static void
 next_event(struct eglut_window *win)
 {
@@ -261,6 +269,23 @@ next_event(struct eglut_window *win)
             if (win->reshape_cb)
                 win->reshape_cb(win->native.width, win->native.height);
             break;
+        case GenericEvent:
+        {
+            if (XGetEventData(_eglut->native_dpy, &event.xcookie) &&
+                    event.xcookie.extension == _eglut_xinput_state.opcode &&
+                    event.xcookie.evtype == XI_RawMotion) {
+                XIRawEvent* data = event.xcookie.data;
+                double const* val = data->raw_values;
+                double x = 0.f, y = 0.f;
+                if (data->valuators.mask_len >= 1 && XIMaskIsSet(data->valuators.mask, 0))
+                    x = *(val++);
+                if (data->valuators.mask_len >= 1 && XIMaskIsSet(data->valuators.mask, 1))
+                    y = *(val++);
+                if (win->mouse_raw_cb)
+                    win->mouse_raw_cb(x, y);
+            }
+            break;
+        }
         case KeyPress:
         case KeyRelease:
         {
@@ -307,6 +332,8 @@ next_event(struct eglut_window *win)
         }
         case MotionNotify:
         {
+            if (isRawMovementEnabled)
+                break;
             if (win->mouse_cb)
                 win->mouse_cb(event.xmotion.x, event.xmotion.y);
             break;
@@ -385,6 +412,8 @@ void eglutWarpMousePointer(int x, int y) {
 }
 
 void eglutSetMousePointerVisiblity(int visible) {
+    isRawMovementEnabled = !visible && _eglutXinputSetRawMotion(!visible);
+
     if (visible == EGLUT_POINTER_INVISIBLE) {
         char emptyData[] = {0, 0, 0, 0, 0, 0, 0, 0};
         XColor black;

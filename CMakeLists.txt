@@ -7,7 +7,7 @@ find_package(PNG REQUIRED)
 set(EGLUT_USE_X11 true)
 
 set(EGLUT_SOURCES include/eglut.h src/eglut.c src/eglutint.h)
-set(EGLUT_X11_SOURCES src/eglut_x11.c include/eglut_x11.h)
+set(EGLUT_X11_SOURCES src/eglut_x11.c include/eglut_x11.h src/xinput.c src/xinput.h)
 
 if (EGLUT_USE_X11)
     find_package(X11 REQUIRED)

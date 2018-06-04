@@ -97,6 +97,7 @@ typedef void (*EGLUTkeyboardCB)(char[5], int);
 typedef void (*EGLUTspecialCB)(int, int);
 typedef void (*EGLUTpasteCB)(const char*, int);
 typedef void (*EGLUTmouseCB)(int, int);
+typedef void (*EGLUTmouseRawCB)(double, double);
 typedef void (*EGLUTmouseButtonCB)(int, int, int, int);
 typedef void (*EGLUTcloseCB)(void);
 
@@ -127,6 +128,7 @@ void eglutKeyboardFunc(EGLUTkeyboardCB func);
 void eglutSpecialFunc(EGLUTspecialCB func);
 void eglutPasteFunc(EGLUTpasteCB func);
 void eglutMouseFunc(EGLUTmouseCB func);
+void eglutMouseRawFunc(EGLUTmouseRawCB func);
 void eglutMouseButtonFunc(EGLUTmouseButtonCB func);
 void eglutCloseWindowFunc(EGLUTcloseCB func);
 
