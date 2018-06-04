@@ -87,7 +87,7 @@ _eglutNativeInitWindow(struct eglut_window *win, const char *title,
     attr.border_pixel = 0;
     attr.colormap = XCreateColormap(_eglut->native_dpy,
                                     root, visInfo->visual, AllocNone);
-    attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask;
+    attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask | KeyReleaseMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | FocusChangeMask;
     mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
     xwin = XCreateWindow(_eglut->native_dpy, root, x, y, w, h,
@@ -232,6 +232,8 @@ static int _eglutRelativeMovementEnabled;
 static int _eglutRelativeMovementLastX, _eglutRelativeMovementLastY;
 static int _eglutRelativeMovementRawMode;
 
+static int _eglutFocused = 1;
+
 static void
 next_event(struct eglut_window *win)
 {
@@ -345,6 +347,28 @@ next_event(struct eglut_window *win)
                 win->mouse_button_cb(event.xbutton.x, event.xbutton.y, event.xbutton.button, EGLUT_MOUSE_RELEASE);
             break;
         }
+        case FocusIn:
+        {
+            if (event.xfocus.mode == NotifyNormal || event.xfocus.mode == NotifyWhileGrabbed) {
+                if (_eglutRelativeMovementEnabled)
+                    eglutSetMousePointerLocked(EGLUT_POINTER_LOCKED);
+                if (win->focus_cb)
+                    win->focus_cb(EGLUT_FOCUSED);
+            }
+            break;
+        }
+        case FocusOut:
+        {
+            if (event.xfocus.mode == NotifyNormal || event.xfocus.mode == NotifyWhileGrabbed) {
+                if (_eglutRelativeMovementEnabled) {
+                    _eglutXinputSetRawMotion(0);
+                    eglutSetMousePointerVisiblity(EGLUT_POINTER_VISIBLE);
+                }
+                if (win->focus_cb)
+                    win->focus_cb(EGLUT_NOT_FOCUSED);
+            }
+            break;
+        }
         case ClientMessage:
         {
             if ((ulong) event.xclient.data.l[0] == XInternAtom(_eglut->native_dpy, "WM_DELETE_WINDOW", False)) {
@@ -424,9 +448,11 @@ void eglutSetMousePointerLocked(int locked) {
     _eglutRelativeMovementEnabled = locked;
     _eglutRelativeMovementRawMode = locked && _eglutXinputSetRawMotion(locked);
 
-    _eglutRelativeMovementLastX = eglutGetWindowWidth() / 2;
-    _eglutRelativeMovementLastY = eglutGetWindowHeight() / 2;
-    eglutWarpMousePointer(_eglutRelativeMovementLastX, _eglutRelativeMovementLastY);
+    if (locked) {
+        _eglutRelativeMovementLastX = eglutGetWindowWidth() / 2;
+        _eglutRelativeMovementLastY = eglutGetWindowHeight() / 2;
+        eglutWarpMousePointer(_eglutRelativeMovementLastX, _eglutRelativeMovementLastY);
+    }
     eglutSetMousePointerVisiblity(!locked);
 }
 

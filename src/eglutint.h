@@ -56,6 +56,7 @@ struct eglut_window {
     EGLUTmouseCB mouse_cb;
     EGLUTmouseRawCB mouse_raw_cb;
     EGLUTmouseButtonCB mouse_button_cb;
+    EGLUTfocusCB focus_cb;
     EGLUTcloseCB close_cb;
 };
 

@@ -95,6 +95,11 @@ enum {
     EGLUT_FULLSCREEN = 1
 };
 
+enum {
+    EGLUT_NOT_FOCUSED = 0,
+    EGLUT_FOCUSED = 1
+};
+
 typedef void (*EGLUTidleCB)(void);
 typedef void (*EGLUTreshapeCB)(int, int);
 typedef void (*EGLUTdisplayCB)(void);
@@ -104,6 +109,7 @@ typedef void (*EGLUTpasteCB)(const char*, int);
 typedef void (*EGLUTmouseCB)(int, int);
 typedef void (*EGLUTmouseRawCB)(double, double);
 typedef void (*EGLUTmouseButtonCB)(int, int, int, int);
+typedef void (*EGLUTfocusCB)(int);
 typedef void (*EGLUTcloseCB)(void);
 
 void eglutInitAPIMask(int mask);
@@ -135,6 +141,7 @@ void eglutPasteFunc(EGLUTpasteCB func);
 void eglutMouseFunc(EGLUTmouseCB func);
 void eglutMouseRawFunc(EGLUTmouseRawCB func);
 void eglutMouseButtonFunc(EGLUTmouseButtonCB func);
+void eglutFocusFunc(EGLUTfocusCB func);
 void eglutCloseWindowFunc(EGLUTcloseCB func);
 
 void eglutWarpMousePointer(int x, int y);

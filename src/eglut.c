@@ -498,6 +498,13 @@ eglutMouseButtonFunc(EGLUTmouseButtonCB func)
 }
 
 void
+eglutFocusFunc(EGLUTfocusCB func)
+{
+    struct eglut_window *win = _eglut->current;
+    win->focus_cb = func;
+}
+
+void
 eglutCloseWindowFunc(EGLUTcloseCB func)
 {
     struct eglut_window *win = _eglut->current;
