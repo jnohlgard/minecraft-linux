@@ -86,6 +86,11 @@ enum {
 };
 
 enum {
+    EGLUT_POINTER_UNLOCKED = 0,
+    EGLUT_POINTER_LOCKED = 1
+};
+
+enum {
     EGLUT_WINDOWED = 0,
     EGLUT_FULLSCREEN = 1
 };
@@ -134,6 +139,7 @@ void eglutCloseWindowFunc(EGLUTcloseCB func);
 
 void eglutWarpMousePointer(int x, int y);
 void eglutSetMousePointerVisiblity(int visible);
+void eglutSetMousePointerLocked(int locked);
 void eglutRequestPaste();
 
 #ifdef __cplusplus

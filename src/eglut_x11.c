@@ -228,25 +228,15 @@ lookup_keysym(KeySym sym)
     return special;
 }
 
-int isRawMovementEnabled;
+static int _eglutRelativeMovementEnabled;
+static int _eglutRelativeMovementLastX, _eglutRelativeMovementLastY;
+static int _eglutRelativeMovementRawMode;
 
 static void
 next_event(struct eglut_window *win)
 {
     int redraw = 0;
     XEvent event, ahead;
-
-    if (!XPending(_eglut->native_dpy)) {
-        /* there is an idle callback */
-        if (_eglut->idle_cb) {
-            _eglut->idle_cb();
-            return;
-        }
-
-        /* the app requests re-display */
-        if (_eglut->redisplay)
-            return;
-    }
 
     /* block for next event */
     XNextEvent(_eglut->native_dpy, &event);
@@ -332,8 +322,13 @@ next_event(struct eglut_window *win)
         }
         case MotionNotify:
         {
-            if (isRawMovementEnabled)
+            if (_eglutRelativeMovementEnabled) {
+                if (win->mouse_raw_cb && !_eglutRelativeMovementRawMode)
+                    win->mouse_raw_cb(event.xmotion.x - _eglutRelativeMovementLastX, event.xmotion.y - _eglutRelativeMovementLastY);
+                _eglutRelativeMovementLastX = event.xmotion.x;
+                _eglutRelativeMovementLastY = event.xmotion.y;
                 break;
+            }
             if (win->mouse_cb)
                 win->mouse_cb(event.xmotion.x, event.xmotion.y);
             break;
@@ -394,7 +389,21 @@ _eglutNativeEventLoop(void)
         if (_eglut->native_dpy == NULL)
             break;
 
-        next_event(win);
+        while (XPending(_eglut->native_dpy) && !_eglut->redisplay)
+            next_event(win);
+
+        if (!_eglut->redisplay && _eglut->idle_cb)
+            _eglut->idle_cb();
+
+        if (_eglutRelativeMovementEnabled) {
+            int cx = eglutGetWindowWidth() / 2;
+            int cy = eglutGetWindowHeight() / 2;
+            if (cx != _eglutRelativeMovementLastX || cy != _eglutRelativeMovementLastY) {
+                _eglutRelativeMovementLastX = cx;
+                _eglutRelativeMovementLastY = cy;
+                eglutWarpMousePointer(cx, cy);
+            }
+        }
 
         if (_eglut->redisplay) {
             _eglut->redisplay = 0;
@@ -411,9 +420,17 @@ void eglutWarpMousePointer(int x, int y) {
     XFlush(_eglut->native_dpy);
 }
 
-void eglutSetMousePointerVisiblity(int visible) {
-    isRawMovementEnabled = !visible && _eglutXinputSetRawMotion(!visible);
+void eglutSetMousePointerLocked(int locked) {
+    _eglutRelativeMovementEnabled = locked;
+    _eglutRelativeMovementRawMode = locked && _eglutXinputSetRawMotion(locked);
 
+    _eglutRelativeMovementLastX = eglutGetWindowWidth() / 2;
+    _eglutRelativeMovementLastY = eglutGetWindowHeight() / 2;
+    eglutWarpMousePointer(_eglutRelativeMovementLastX, _eglutRelativeMovementLastY);
+    eglutSetMousePointerVisiblity(!locked);
+}
+
+void eglutSetMousePointerVisiblity(int visible) {
     if (visible == EGLUT_POINTER_INVISIBLE) {
         char emptyData[] = {0, 0, 0, 0, 0, 0, 0, 0};
         XColor black;
