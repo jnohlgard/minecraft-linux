@@ -21,7 +21,7 @@ public:
         this->title = title;
     }
 
-    void setMode(Mode mode) {
+    void setMode(Mode mode) override {
         this->mode = mode;
     }
 

@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <stdexcept>
 #include <cstring>
+#include <errno.h>
 
 const std::string ZenityFilePicker::EXECUTABLE_PATH = "/usr/bin/zenity";
 
