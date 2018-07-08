@@ -144,7 +144,7 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 	if ((!ev && op != EPOLL_CTL_DEL) ||
 	    (ev &&
 		((ev->events &
-		    ~(EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP | EPOLLERR))
+		    ~(EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP | EPOLLERR | EPOLLET))
 		    /* the user should really set one of EPOLLIN or EPOLLOUT
 		     * so that EPOLLHUP and EPOLLERR work. Don't make this a
 		     * hard error for now, though. */
@@ -169,11 +169,12 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 			return (-1);
 		}
 
+		int extra = (ev->events & EPOLLET ? EV_CLEAR : 0);
 		EV_SET(&kev[0], fd2, EVFILT_READ,
-		    EV_ADD | (ev->events & EPOLLIN ? 0 : EV_DISABLE), 0, 0,
+		    EV_ADD | (ev->events & EPOLLIN ? 0 : EV_DISABLE) | extra, 0, 0,
 		    ev->data.ptr);
 		EV_SET(&kev[1], fd2, EVFILT_WRITE,
-		    EV_ADD | (ev->events & EPOLLOUT ? 0 : EV_DISABLE), 0, 0,
+		    EV_ADD | (ev->events & EPOLLOUT ? 0 : EV_DISABLE) | extra, 0, 0,
 		    ev->data.ptr);
 
 		flags = KQUEUE_STATE_REGISTERED;
@@ -207,11 +208,12 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 			return (-1);
 		}
 
+		int extra = (ev->events & EPOLLET ? EV_CLEAR : 0);
 		EV_SET(&kev[0], fd2, EVFILT_READ,
-		    ev->events & EPOLLIN ? EV_ENABLE : EV_DISABLE, 0, 0,
+		    (ev->events & EPOLLIN ? EV_ENABLE : EV_DISABLE) | extra, 0, 0,
 		    ev->data.ptr);
 		EV_SET(&kev[1], fd2, EVFILT_WRITE,
-		    ev->events & EPOLLOUT ? EV_ENABLE : EV_DISABLE, 0, 0,
+		    (ev->events & EPOLLOUT ? EV_ENABLE : EV_DISABLE) | extra, 0, 0,
 		    ev->data.ptr);
 
 #define SET_FLAG(flag)                                                        \
@@ -267,7 +269,7 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 	}
 
 	if (op != EPOLL_CTL_DEL && is_not_yet_connected_stream_socket(fd2)) {
-		EV_SET(&kev[0], fd2, EVFILT_READ, EV_ENABLE | EV_FORCEONESHOT, // EV_FORCEONESHOT
+		EV_SET(&kev[0], fd2, EVFILT_READ, EV_ENABLE | EV_FORCEONESHOT,
 		    0, 0, ev->data.ptr);
 		if (kevent(fd, kev, 1, NULL, 0, NULL) < 0) {
 			return -1;
