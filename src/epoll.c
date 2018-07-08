@@ -112,9 +112,10 @@ kqueue_load_state(int kq, uint32_t key, uint16_t *val)
 #define KQUEUE_STATE_EPOLLIN 0x2u
 #define KQUEUE_STATE_EPOLLOUT 0x4u
 #define KQUEUE_STATE_EPOLLRDHUP 0x8u
-#define KQUEUE_STATE_NYCSS 0x10u
-#define KQUEUE_STATE_ISFIFO 0x20u
-#define KQUEUE_STATE_ISSOCK 0x40u
+#define KQUEUE_STATE_EPOLLPRI 0x10u
+#define KQUEUE_STATE_NYCSS 0x20u
+#define KQUEUE_STATE_ISFIFO 0x40u
+#define KQUEUE_STATE_ISSOCK 0x80u
 
 static int
 is_not_yet_connected_stream_socket(int s)
@@ -144,7 +145,7 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 	if ((!ev && op != EPOLL_CTL_DEL) ||
 	    (ev &&
 		((ev->events &
-		    ~(EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP | EPOLLERR | EPOLLET))
+		    ~(EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLRDHUP | EPOLLERR | EPOLLPRI | EPOLLET))
 		    /* the user should really set one of EPOLLIN or EPOLLOUT
 		     * so that EPOLLHUP and EPOLLERR work. Don't make this a
 		     * hard error for now, though. */
@@ -189,6 +190,7 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 		SET_FLAG(EPOLLIN);
 		SET_FLAG(EPOLLOUT);
 		SET_FLAG(EPOLLRDHUP);
+		SET_FLAG(EPOLLPRI);
 
 #undef SET_FLAG
 
@@ -228,6 +230,7 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 		SET_FLAG(EPOLLIN);
 		SET_FLAG(EPOLLOUT);
 		SET_FLAG(EPOLLRDHUP);
+		SET_FLAG(EPOLLPRI);
 
 #undef SET_FLAG
 
@@ -346,6 +349,9 @@ again:;
 
 	for (int i = 0; i < ret; ++i) {
 		int events = 0;
+		if ((flags & KQUEUE_STATE_EPOLLPRI) && (evlist[i].flags & EV_OOBAND)) {
+			events |= EPOLLPRI;
+		}
 		if (evlist[i].filter == EVFILT_READ) {
 			events |= EPOLLIN;
 			if (evlist[i].flags & EV_ONESHOT) {
