@@ -1,7 +1,6 @@
 #include <sys/epoll.h>
 
 #include <sys/event.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 
 #include <errno.h>
@@ -117,24 +116,6 @@ kqueue_load_state(int kq, uint32_t key, uint16_t *val)
 #define KQUEUE_STATE_ISFIFO 0x40u
 #define KQUEUE_STATE_ISSOCK 0x80u
 
-static int
-is_not_yet_connected_stream_socket(int s)
-{
-	int type;
-	socklen_t length = sizeof(int);
-
-	if (getsockopt(s, SOL_SOCKET, SO_TYPE, &type, &length) == 0 &&
-	    (type == SOCK_STREAM || type == SOCK_SEQPACKET)) {
-		struct sockaddr name;
-		socklen_t namelen = 0;
-		if (getpeername(s, &name, &namelen) < 0 && errno == ENOTCONN) {
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
 int
 epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 {
@@ -239,6 +220,11 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 		return (-1);
 	}
 
+	if ((e = kqueue_save_state(fd, fd2, flags)) < 0) {
+		errno = e;
+		return (-1);
+	}
+
 	for (int i = 0; i < 2; ++i) {
 		kev[i].flags |= EV_RECEIPT;
 	}
@@ -271,16 +257,6 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 		}
 	}
 
-	if (op != EPOLL_CTL_DEL && is_not_yet_connected_stream_socket(fd2)) {
-		EV_SET(&kev[0], fd2, EVFILT_READ, EV_ENABLE | EV_FORCEONESHOT,
-		    0, 0, ev->data.ptr);
-		if (kevent(fd, kev, 1, NULL, 0, NULL) < 0) {
-			return -1;
-		}
-
-		flags |= KQUEUE_STATE_NYCSS;
-	}
-
 	struct stat statbuf;
 	if (fstat(fd2, &statbuf) < 0) {
 		return -1;
@@ -296,7 +272,6 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 		errno = e;
 		return (-1);
 	}
-
 	return 0;
 }
 
@@ -338,14 +313,11 @@ epoll_wait(int fd, struct epoll_event *ev, int cnt, int to)
 		ptimeout = &timeout;
 	}
 
-again:;
 	struct kevent evlist[32];
 	int ret = kevent(fd, NULL, 0, evlist, cnt, ptimeout);
 	if (ret < 0) {
 		return -1;
 	}
-
-	int j = 0;
 
 	for (int i = 0; i < ret; ++i) {
 		int events = 0;
@@ -354,59 +326,6 @@ again:;
 		}
 		if (evlist[i].filter == EVFILT_READ) {
 			events |= EPOLLIN;
-			if (evlist[i].flags & EV_ONESHOT) {
-				uint16_t flags = 0;
-				kqueue_load_state(fd, evlist[i].ident, &flags);
-
-				if (flags & KQUEUE_STATE_NYCSS) {
-					if (is_not_yet_connected_stream_socket(
-						evlist[i].ident)) {
-
-						events = EPOLLHUP;
-						if (flags &
-						    KQUEUE_STATE_EPOLLOUT) {
-							events |= EPOLLOUT;
-						}
-
-						struct kevent nkev[2];
-						EV_SET(&nkev[0],
-						    evlist[i].ident,
-						    EVFILT_READ, EV_ADD, /**/
-						    0, 0, evlist[i].udata);
-						EV_SET(&nkev[1],
-						    evlist[i].ident,
-						    EVFILT_READ,
-						    EV_ENABLE |
-							EV_FORCEONESHOT,
-						    0, 0, evlist[i].udata);
-
-						kevent(fd, nkev, 2, NULL, 0,
-						    NULL);
-					} else {
-						flags &= ~KQUEUE_STATE_NYCSS;
-
-						struct kevent nkev[2];
-						EV_SET(&nkev[0],
-						    evlist[i].ident,
-						    EVFILT_READ, EV_ADD, /**/
-						    0, 0, evlist[i].udata);
-						EV_SET(&nkev[1],
-						    evlist[i].ident,
-						    EVFILT_READ,
-						    flags & KQUEUE_STATE_EPOLLIN
-							? EV_ENABLE
-							: EV_DISABLE,
-						    0, 0, evlist[i].udata);
-
-						kevent(fd, nkev, 2, NULL, 0,
-						    NULL);
-						kqueue_save_state(fd,
-						    evlist[i].ident, flags);
-
-						continue;
-					}
-				}
-			}
 		} else if (evlist[i].filter == EVFILT_WRITE) {
 			events |= EPOLLOUT;
 		}
@@ -505,14 +424,9 @@ again:;
 
 			events |= epoll_event;
 		}
-		ev[j].events = events;
-		ev[j].data.ptr = evlist[i].udata;
-		++j;
+		ev[i].events = events;
+		ev[i].data.ptr = evlist[i].udata;
 	}
 
-	if (ret && j == 0) {
-		goto again;
-	}
-
-	return j;
+	return ret;
 }
