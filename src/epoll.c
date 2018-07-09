@@ -328,8 +328,12 @@ epoll_wait(int fd, struct epoll_event *ev, int cnt, int to)
 
 	for (int i = 0; i < ret; ++i) {
 		int events = 0;
-		if ((flags & KQUEUE_STATE_EPOLLPRI) && (evlist[i].flags & EV_OOBAND)) {
-			events |= EPOLLPRI;
+		if (evlist[i].flags & EV_OOBAND) {
+                    uint16_t flags = 0;
+                    kqueue_load_state(fd, evlist[i].ident, &flags);
+
+		    if (flags & KQUEUE_STATE_EPOLLPRI)
+                        events |= EPOLLPRI;
 		}
 		if (evlist[i].filter == EVFILT_READ) {
 			events |= EPOLLIN;
