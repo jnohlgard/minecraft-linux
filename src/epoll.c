@@ -146,10 +146,17 @@ epoll_ctl(int fd, int op, int fd2, struct epoll_event *ev)
 	}
 
 	if (op == EPOLL_CTL_ADD) {
+                /**
+                 * HACK(mrarm): Allow "reregistration". When fds are close()'d, we do not have any means of detecting
+                 * that with kqueue (we could takeover the close call in hybris, and I perhaps should consider doing
+                 * that?). As fds are reused on Unix, it is possible that later another fd is opened with the same ID,
+                 * but we still have the flags set for the previous one.
+                 * This shouldn't have any significant side effects because the flags are reset in this function.
 		if (flags & KQUEUE_STATE_REGISTERED) {
 			errno = EEXIST;
 			return (-1);
 		}
+                */
 
 		int extra = (ev->events & EPOLLET ? EV_CLEAR : 0);
 		EV_SET(&kev[0], fd2, EVFILT_READ,
