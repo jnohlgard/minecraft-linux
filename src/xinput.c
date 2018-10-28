@@ -70,6 +70,8 @@ int _eglutIsXinputAvailable() {
 int _eglutXinputSetRawMotion(int raw) {
     if (!_eglut_xinput_state.available)
         return 0;
+    if (!_eglut->native_dpy)
+        return 0;
     if (raw) {
         XIEventMask em;
         unsigned char mask[XIMaskLen(XI_RawMotion)] = { 0 };

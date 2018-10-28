@@ -440,6 +440,8 @@ _eglutNativeEventLoop(void)
 }
 
 void eglutWarpMousePointer(int x, int y) {
+    if (!_eglut->native_dpy)
+        return;
     XWarpPointer(_eglut->native_dpy, None, _eglut->current->native.u.window, 0, 0, 0, 0, x, y);
     XFlush(_eglut->native_dpy);
 }
@@ -457,6 +459,8 @@ void eglutSetMousePointerLocked(int locked) {
 }
 
 void eglutSetMousePointerVisiblity(int visible) {
+    if (!_eglut->native_dpy)
+        return;
     if (visible == EGLUT_POINTER_INVISIBLE) {
         char emptyData[] = {0, 0, 0, 0, 0, 0, 0, 0};
         XColor black;
