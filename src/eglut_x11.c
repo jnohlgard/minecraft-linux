@@ -234,6 +234,8 @@ static int _eglutRelativeMovementRawMode;
 
 static int _eglutFocused = 1;
 
+static char *_eglutClipboard;
+
 static void
 next_event(struct eglut_window *win)
 {
@@ -381,6 +383,33 @@ next_event(struct eglut_window *win)
                 }
             }
         }
+        case SelectionRequest:
+        {
+            Atom targets_atom = XInternAtom(_eglut->native_dpy, "TARGETS", False);
+            Atom string_atom = XInternAtom(_eglut->native_dpy, "STRING", False);
+            Atom utf8_string_atom = XInternAtom(_eglut->native_dpy, "UTF8_STRING", False);
+
+            XEvent reply;
+            reply.xselection.type = SelectionNotify;
+            reply.xselection.requestor = event.xselectionrequest.requestor;
+            reply.xselection.selection = event.xselectionrequest.selection;
+            reply.xselection.target = event.xselectionrequest.target;
+            reply.xselection.property = None;
+            reply.xselection.time = event.xselectionrequest.time;
+            if (event.xselectionrequest.target == targets_atom) {
+                reply.xselection.property = event.xselectionrequest.property;
+                Atom val[] = {utf8_string_atom, string_atom};
+                XChangeProperty(_eglut->native_dpy, event.xselectionrequest.requestor, event.xselectionrequest.property,
+                                targets_atom, 32, PropModeReplace, (unsigned char*) val, 2);
+            } else if (event.xselectionrequest.target == string_atom ||
+                       event.xselectionrequest.target == utf8_string_atom) {
+                reply.xselection.property = event.xselectionrequest.property;
+                XChangeProperty(_eglut->native_dpy, event.xselectionrequest.requestor, event.xselectionrequest.property,
+                                event.xselectionrequest.target, 8, PropModeReplace, (unsigned char*) _eglutClipboard,
+                                strlen(_eglutClipboard));
+            }
+            XSendEvent(_eglut->native_dpy, event.xselectionrequest.requestor, True, 0, &reply);
+        }
         case SelectionNotify:
         {
             Atom utf8_string = XInternAtom(_eglut->native_dpy, "UTF8_STRING", False);
@@ -518,6 +547,18 @@ void eglutRequestPaste()
     XConvertSelection(_eglut->native_dpy, clipboard, utf8_string, app_cb_atom, _eglut->current->native.u.window, CurrentTime);
 }
 
+void
+eglutSetClipboardText(const char* value)
+{
+    if (_eglutClipboard)
+        free(_eglutClipboard);
+    _eglutClipboard = strdup(value);
+
+    Atom clipboard = XInternAtom(_eglut->native_dpy, "CLIPBOARD", False);
+    XSetSelectionOwner(_eglut->native_dpy, clipboard, _eglut->current->native.u.window, CurrentTime);
+    XFlush(_eglut->native_dpy);
+}
+
 Display* eglutGetDisplay() {
     return _eglut->native_dpy;
 }
@@ -525,3 +566,4 @@ Display* eglutGetDisplay() {
 Window eglutGetWindowHandle() {
     return _eglut->current->native.u.window;
 }
+

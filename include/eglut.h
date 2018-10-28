@@ -148,6 +148,7 @@ void eglutWarpMousePointer(int x, int y);
 void eglutSetMousePointerVisiblity(int visible);
 void eglutSetMousePointerLocked(int locked);
 void eglutRequestPaste();
+void eglutSetClipboardText(const char* value);
 
 #ifdef __cplusplus
 }
