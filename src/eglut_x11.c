@@ -382,6 +382,7 @@ next_event(struct eglut_window *win)
                     eglutFini();
                 }
             }
+            break;
         }
         case SelectionRequest:
         {
@@ -409,6 +410,7 @@ next_event(struct eglut_window *win)
                                 strlen(_eglutClipboard));
             }
             XSendEvent(_eglut->native_dpy, event.xselectionrequest.requestor, True, 0, &reply);
+            break;
         }
         case SelectionNotify:
         {
@@ -425,6 +427,7 @@ next_event(struct eglut_window *win)
                     win->paste_cb(data, length);
                 XFree(data);
             }
+            break;
         }
         default:
             ; /*no-op*/
