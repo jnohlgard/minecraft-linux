@@ -56,6 +56,8 @@ _eglutNativeFiniDisplay(void)
 }
 
 
+static char *_eglutClassName;
+static char *_eglutClassInstanceName;
 XIC x11_ic;
 
 void
@@ -113,6 +115,13 @@ _eglutNativeInitWindow(struct eglut_window *win, const char *title,
         XSetNormalHints(_eglut->native_dpy, xwin, &sizehints);
         XSetStandardProperties(_eglut->native_dpy, xwin,
                                title, title, None, (char **) NULL, 0, &sizehints);
+
+        XClassHint hints;
+        hints.res_name = _eglutClassInstanceName;
+        hints.res_class = _eglutClassName;
+        if (!_eglutClassName)
+            hints.res_class = _eglutClassInstanceName;
+        XSetClassHint(_eglut->native_dpy, xwin, &hints);
     }
 
     win->native.u.window = xwin;
@@ -474,6 +483,26 @@ _eglutNativeEventLoop(void)
             eglSwapBuffers(_eglut->dpy, win->surface);
         }
     }
+}
+
+void eglutInitX11ClassInstanceName(const char *value)
+{
+    if (_eglutClassInstanceName)
+        free(_eglutClassInstanceName);
+    if (value)
+        _eglutClassInstanceName = strdup(value);
+    else
+        _eglutClassInstanceName = NULL;
+}
+
+void eglutInitX11ClassName(const char *value)
+{
+    if (_eglutClassName)
+        free(_eglutClassName);
+    if (value)
+        _eglutClassName = strdup(value);
+    else
+        _eglutClassName = NULL;
 }
 
 void eglutWarpMousePointer(int x, int y) {

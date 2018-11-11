@@ -10,6 +10,9 @@ extern "C" {
 Display* eglutGetDisplay();
 Window eglutGetWindowHandle();
 
+void eglutInitX11ClassInstanceName(const char *value);
+void eglutInitX11ClassName(const char *value);
+
 #ifdef __cplusplus
 }
 #endif

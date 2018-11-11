@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include <sys/time.h>
 #include <png.h>
+#include <libgen.h>
 
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
@@ -208,14 +209,24 @@ void
 eglutInit(int argc, char **argv)
 {
     int i;
+    const char* resname;
+
+    resname = getenv("RESOURCE_NAME");
 
     for (i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-display") == 0)
+        if (strcmp(argv[i], "-display") == 0) {
             _eglut->display_name = argv[++i];
-        else if (strcmp(argv[i], "-info") == 0) {
+        } else if (strcmp(argv[i], "-info") == 0) {
             _eglut->verbose = 1;
+        } else if (strcmp(argv[i], "-name") == 0) {
+            resname = argv[++i];
         }
     }
+
+    if (resname && strlen(resname) > 0)
+        eglutInitX11ClassInstanceName(resname);
+    else if (argc > 0)
+        eglutInitX11ClassInstanceName(basename(argv[0]));
 
     _eglutNativeInitDisplay();
     _eglut->dpy = eglGetDisplay(_eglut->native_dpy);

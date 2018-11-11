@@ -28,6 +28,7 @@
 
 #include "EGL/egl.h"
 #include "eglut.h"
+#include "eglut_x11.h"
 
 struct eglut_window {
     EGLConfig config;
