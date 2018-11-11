@@ -100,7 +100,7 @@ void
 
 void
         _eglutNativeInitWindow(struct eglut_window *win, const char *title,
-                               int x, int y, int w, int h, const char *icon);
+                               int x, int y, int w, int h);
 
 void
         _eglutNativeFiniWindow(struct eglut_window *win);

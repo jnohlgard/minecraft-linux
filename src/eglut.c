@@ -132,7 +132,7 @@ _eglutChooseConfig(void)
 }
 
 static struct eglut_window *
-_eglutCreateWindow(const char *title, int x, int y, int w, int h, const char *icon)
+_eglutCreateWindow(const char *title, int x, int y, int w, int h)
 {
     struct eglut_window *win;
     EGLint context_attribs[4];
@@ -169,7 +169,7 @@ _eglutCreateWindow(const char *title, int x, int y, int w, int h, const char *ic
     if (!win->context)
         _eglutFatal("failed to create context");
 
-    _eglutNativeInitWindow(win, title, x, y, w, h, icon);
+    _eglutNativeInitWindow(win, title, x, y, w, h);
     switch (_eglut->surface_type) {
         case EGL_WINDOW_BIT:
             win->surface = eglCreateWindowSurface(_eglut->dpy,
@@ -225,8 +225,8 @@ eglutInit(int argc, char **argv)
 
     _eglut->init_time = _eglutNow();
 
-    printf("EGL_VERSION = %s\n", eglQueryString(_eglut->dpy, EGL_VERSION));
     if (_eglut->verbose) {
+        printf("EGL_VERSION = %s\n", eglQueryString(_eglut->dpy, EGL_VERSION));
         printf("EGL_VENDOR = %s\n", eglQueryString(_eglut->dpy, EGL_VENDOR));
         printf("EGL_EXTENSIONS = %s\n",
                eglQueryString(_eglut->dpy, EGL_EXTENSIONS));
@@ -391,11 +391,11 @@ _eglutReadPNG(const char *filename, unsigned int *width, unsigned int *height) {
 }
 
 int
-eglutCreateWindow(const char *title, const char *icon)
+eglutCreateWindow(const char *title)
 {
     struct eglut_window *win;
 
-    win = _eglutCreateWindow(title, -1, -1, _eglut->window_width, _eglut->window_height, icon);
+    win = _eglutCreateWindow(title, -1, -1, _eglut->window_width, _eglut->window_height);
 
     win->index = _eglut->num_windows++;
     win->reshape_cb = NULL;

@@ -60,7 +60,7 @@ XIC x11_ic;
 
 void
 _eglutNativeInitWindow(struct eglut_window *win, const char *title,
-                       int x, int y, int w, int h, const char *icon)
+                       int x, int y, int w, int h)
 {
     XVisualInfo *visInfo, visTemplate;
     int num_visuals;
@@ -115,31 +115,6 @@ _eglutNativeInitWindow(struct eglut_window *win, const char *title,
                                title, title, None, (char **) NULL, 0, &sizehints);
     }
 
-    if (icon != NULL) {
-        unsigned int img_w, img_h;
-        Atom wm_icon = XInternAtom(_eglut->native_dpy, "_NET_WM_ICON", False);
-        Atom cardinal = XInternAtom(_eglut->native_dpy, "CARDINAL", False);
-
-        unsigned char* img_data = _eglutReadPNG(icon, &img_w, &img_h);
-        if (img_data != NULL) {
-            unsigned char* data = malloc((img_w * img_h + 2) * 4);
-            *((unsigned int*) &data[0]) = img_w;
-            *((unsigned int*) &data[4]) = img_h;
-            for (ssize_t i = (img_w * img_h - 1) * 4; i >= 0; i -= 4) {
-                data[8 + i + 3] = img_data[i + 3];
-                data[8 + i + 2] = img_data[i + 0];
-                data[8 + i + 1] = img_data[i + 1];
-                data[8 + i + 0] = img_data[i + 2];
-            }
-            XChangeProperty(_eglut->native_dpy, xwin, wm_icon, cardinal, 32, PropModeReplace, data, img_w * img_h + 2);
-            //free(data);
-        }
-        free(img_data);
-    }
-
-
-    XMapWindow(_eglut->native_dpy, xwin);
-
     win->native.u.window = xwin;
     win->native.width = w;
     win->native.height = h;
@@ -150,9 +125,39 @@ _eglutNativeInitWindow(struct eglut_window *win, const char *title,
     XIM im = XOpenIM(_eglut->native_dpy, NULL, NULL, NULL);
     if (im != NULL) {
         x11_ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, XNClientWindow, xwin, NULL);
-        if (x11_ic != NULL) {
-            XSetICFocus(x11_ic);
+    }
+}
+
+void eglutSetWindowIcon(const char *path)
+{
+    unsigned int img_w, img_h;
+    Atom wm_icon = XInternAtom(_eglut->native_dpy, "_NET_WM_ICON", False);
+    Atom cardinal = XInternAtom(_eglut->native_dpy, "CARDINAL", False);
+
+    unsigned char* img_data = _eglutReadPNG(path, &img_w, &img_h);
+    if (img_data != NULL) {
+        unsigned char* data = malloc((img_w * img_h + 2) * 4);
+        *((unsigned int*) &data[0]) = img_w;
+        *((unsigned int*) &data[4]) = img_h;
+        for (ssize_t i = (img_w * img_h - 1) * 4; i >= 0; i -= 4) {
+            data[8 + i + 3] = img_data[i + 3];
+            data[8 + i + 2] = img_data[i + 0];
+            data[8 + i + 1] = img_data[i + 1];
+            data[8 + i + 0] = img_data[i + 2];
         }
+        XChangeProperty(_eglut->native_dpy, _eglut->current->native.u.window, wm_icon, cardinal, 32, PropModeReplace,
+                data, img_w * img_h + 2);
+        //free(data);
+    }
+    free(img_data);
+}
+
+void eglutShowWindow()
+{
+    XMapWindow(_eglut->native_dpy, _eglut->current->native.u.window);
+
+    if (x11_ic != NULL) {
+        XSetICFocus(x11_ic);
     }
 }
 
