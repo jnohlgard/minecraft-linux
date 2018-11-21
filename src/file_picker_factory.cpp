@@ -2,7 +2,12 @@
 
 #include <stdexcept>
 
-#ifdef FILEPICKER_USE_ZENITY
+#if defined(FILEPICKER_USE_COCOA)
+#include "file_picker_cocoa.h"
+std::unique_ptr<FilePicker> FilePickerFactory::createFilePicker() {
+    return std::unique_ptr<FilePicker>(new CocoaFilePicker());
+}
+#elif defined(FILEPICKER_USE_ZENITY)
 #include "file_picker_zenity.h"
 std::unique_ptr<FilePicker> FilePickerFactory::createFilePicker() {
     return std::unique_ptr<FilePicker>(new ZenityFilePicker());
