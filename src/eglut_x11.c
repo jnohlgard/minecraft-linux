@@ -128,6 +128,18 @@ _eglutNativeInitWindow(struct eglut_window *win, const char *title,
     win->native.width = w;
     win->native.height = h;
 
+    if (_eglutIsXinputAvailable()) {
+        XIEventMask em;
+        unsigned char mask[XIMaskLen(XI_LASTEVENT)] = { 0 };
+        em.deviceid = XIAllMasterDevices;
+        em.mask_len = sizeof(mask);
+        em.mask = mask;
+        XISetMask(mask, XI_TouchBegin);
+        XISetMask(mask, XI_TouchUpdate);
+        XISetMask(mask, XI_TouchEnd);
+        XISelectEvents(_eglut->native_dpy, xwin, &em, 1);
+    }
+
     Atom WM_DELETE_WINDOW = XInternAtom(_eglut->native_dpy, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(_eglut->native_dpy, xwin, &WM_DELETE_WINDOW, 1);
 
@@ -251,6 +263,43 @@ static int _eglutFocused = 1;
 static char *_eglutClipboard;
 
 static void
+handle_xinput_event(struct eglut_window *win, XEvent* event)
+{
+    switch (event->xcookie.evtype) {
+        case XI_RawMotion: {
+            XIRawEvent *data = event->xcookie.data;
+            double const *val = data->raw_values;
+            double x = 0.f, y = 0.f;
+            if (data->valuators.mask_len >= 1 && XIMaskIsSet(data->valuators.mask, 0))
+                x = *(val++);
+            if (data->valuators.mask_len >= 1 && XIMaskIsSet(data->valuators.mask, 1))
+                y = *(val++);
+            if (win->mouse_raw_cb)
+                win->mouse_raw_cb(x, y);
+            break;
+        }
+        case XI_TouchBegin: {
+            XIDeviceEvent *data = event->xcookie.data;
+            if (win->touch_start_cb)
+                win->touch_start_cb(data->detail, data->event_x, data->event_y);
+            break;
+        }
+        case XI_TouchUpdate: {
+            XIDeviceEvent *data = event->xcookie.data;
+            if (win->touch_update_cb)
+                win->touch_update_cb(data->detail, data->event_x, data->event_y);
+            break;
+        }
+        case XI_TouchEnd: {
+            XIDeviceEvent *data = event->xcookie.data;
+            if (win->touch_end_cb)
+                win->touch_end_cb(data->detail, data->event_x, data->event_y);
+            break;
+        }
+    }
+}
+
+static void
 next_event(struct eglut_window *win)
 {
     int redraw = 0;
@@ -280,17 +329,8 @@ next_event(struct eglut_window *win)
         case GenericEvent:
         {
             if (XGetEventData(_eglut->native_dpy, &event.xcookie) &&
-                    event.xcookie.extension == _eglut_xinput_state.opcode &&
-                    event.xcookie.evtype == XI_RawMotion) {
-                XIRawEvent* data = event.xcookie.data;
-                double const* val = data->raw_values;
-                double x = 0.f, y = 0.f;
-                if (data->valuators.mask_len >= 1 && XIMaskIsSet(data->valuators.mask, 0))
-                    x = *(val++);
-                if (data->valuators.mask_len >= 1 && XIMaskIsSet(data->valuators.mask, 1))
-                    y = *(val++);
-                if (win->mouse_raw_cb)
-                    win->mouse_raw_cb(x, y);
+                    event.xcookie.extension == _eglut_xinput_state.opcode) {
+                handle_xinput_event(win, &event);
             }
             break;
         }

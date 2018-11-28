@@ -509,6 +509,27 @@ eglutMouseButtonFunc(EGLUTmouseButtonCB func)
 }
 
 void
+eglutTouchStartFunc(EGLUTtouchStartCB func)
+{
+    struct eglut_window *win = _eglut->current;
+    win->touch_start_cb = func;
+}
+
+void
+eglutTouchUpdateFunc(EGLUTtouchUpdateCB func)
+{
+    struct eglut_window *win = _eglut->current;
+    win->touch_update_cb = func;
+}
+
+void
+eglutTouchEndFunc(EGLUTtouchEndCB func)
+{
+    struct eglut_window *win = _eglut->current;
+    win->touch_end_cb = func;
+}
+
+void
 eglutFocusFunc(EGLUTfocusCB func)
 {
     struct eglut_window *win = _eglut->current;
