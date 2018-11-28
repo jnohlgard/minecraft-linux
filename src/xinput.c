@@ -26,6 +26,7 @@
 //========================================================================
 
 #include <dlfcn.h>
+#include <stdio.h>
 #include "xinput.h"
 #include "eglutint.h"
 
@@ -40,7 +41,11 @@ void _eglutInitXinputRt() {
     if (h == NULL)
         return;
     _eglut_xinput_rt.QueryVersion = dlsym(h, "XIQueryVersion");
+    _eglut_xinput_rt.QueryDevice = dlsym(h, "XIQueryDevice");
+    _eglut_xinput_rt.FreeDeviceInfo = dlsym(h, "XIFreeDeviceInfo");
     _eglut_xinput_rt.SelectEvents = dlsym(h, "XISelectEvents");
+    _eglut_xinput_rt.GrabDevice = dlsym(h, "XIGrabDevice");
+    _eglut_xinput_rt.UngrabDevice = dlsym(h, "XIUngrabDevice");
 }
 
 int _eglutCheckXinput() {
@@ -49,7 +54,7 @@ int _eglutCheckXinput() {
     int event, error;
     if (!XQueryExtension(_eglut->native_dpy, "XInputExtension", &_eglut_xinput_state.opcode, &event, &error))
         return 0;
-    int major = 2, minor = 0;
+    int major = 2, minor = 2;
     if (XIQueryVersion(_eglut->native_dpy, &major, &minor) == BadRequest)
         return 0;
     return 1;
@@ -72,25 +77,34 @@ int _eglutXinputSetRawMotion(int raw) {
         return 0;
     if (!_eglut->native_dpy)
         return 0;
+    int devc = 0;
+    XIDeviceInfo* devices = XIQueryDevice(_eglut->native_dpy, XIAllMasterDevices, &devc);
     if (raw) {
         XIEventMask em;
-        unsigned char mask[XIMaskLen(XI_RawMotion)] = { 0 };
+        unsigned char mask[XIMaskLen(XI_LASTEVENT)] = { 0 };
 
         em.deviceid = XIAllMasterDevices;
         em.mask_len = sizeof(mask);
         em.mask = mask;
+        XISetMask(mask, XI_Motion);
+        XISetMask(mask, XI_ButtonPress);
+        XISetMask(mask, XI_ButtonRelease);
         XISetMask(mask, XI_RawMotion);
+        XISetMask(mask, XI_Motion);
 
-        XISelectEvents(_eglut->native_dpy, XDefaultRootWindow(_eglut->native_dpy), &em, 1);
+        for (int i = 0; i < devc; i++) {
+            if (devices[i].use == XIMasterPointer) {
+                XUngrabPointer(_eglut->native_dpy, CurrentTime);
+                XIGrabDevice(_eglut->native_dpy, devices[i].deviceid, _eglut->current->native.u.window, CurrentTime,
+                        None, XIGrabModeAsync, XIGrabModeAsync, False, &em);
+            }
+        }
     } else {
-        XIEventMask em;
-        unsigned char mask[] = { 0 };
-
-        em.deviceid = XIAllMasterDevices;
-        em.mask_len = sizeof(mask);
-        em.mask = mask;
-
-        XISelectEvents(_eglut->native_dpy, XDefaultRootWindow(_eglut->native_dpy), &em, 1);
+        for (int i = 0; i < devc; i++) {
+            if (devices[i].use == XIMasterPointer)
+                XIUngrabDevice(_eglut->native_dpy, devices[i].deviceid, CurrentTime);
+        }
     }
+    XIFreeDeviceInfo(devices);
     return 1;
 }

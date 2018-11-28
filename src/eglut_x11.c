@@ -278,6 +278,30 @@ handle_xinput_event(struct eglut_window *win, XEvent* event)
                 win->mouse_raw_cb(x, y);
             break;
         }
+        case XI_Motion:
+        {
+            XIDeviceEvent *data = event->xcookie.data;
+            if (_eglutRelativeMovementEnabled) {
+                _eglutRelativeMovementLastX = (int) data->event_x;
+                _eglutRelativeMovementLastY = (int) data->event_y;
+                break;
+            }
+            if (win->mouse_cb)
+                win->mouse_cb((int) data->event_x, (int) data->event_y);
+            break;
+        }
+        case XI_ButtonPress: {
+            XIDeviceEvent *data = event->xcookie.data;
+            if (win->mouse_button_cb)
+                win->mouse_button_cb((int) data->event_x, (int) data->event_y, data->detail, EGLUT_MOUSE_PRESS);
+            break;
+        }
+        case XI_ButtonRelease: {
+            XIDeviceEvent *data = event->xcookie.data;
+            if (win->mouse_button_cb)
+                win->mouse_button_cb((int) data->event_x, (int) data->event_y, data->detail, EGLUT_MOUSE_RELEASE);
+            break;
+        }
         case XI_TouchBegin: {
             XIDeviceEvent *data = event->xcookie.data;
             if (win->touch_start_cb)
@@ -553,14 +577,14 @@ void eglutWarpMousePointer(int x, int y) {
 }
 
 void eglutSetMousePointerLocked(int locked) {
-    _eglutRelativeMovementEnabled = locked;
-    _eglutRelativeMovementRawMode = locked && _eglutXinputSetRawMotion(locked);
-
     if (locked) {
         _eglutRelativeMovementLastX = eglutGetWindowWidth() / 2;
         _eglutRelativeMovementLastY = eglutGetWindowHeight() / 2;
         eglutWarpMousePointer(_eglutRelativeMovementLastX, _eglutRelativeMovementLastY);
     }
+
+    _eglutRelativeMovementEnabled = locked;
+    _eglutRelativeMovementRawMode = _eglutXinputSetRawMotion(locked) && locked;
     eglutSetMousePointerVisiblity(!locked);
 }
 
@@ -576,14 +600,17 @@ void eglutSetMousePointerVisiblity(int visible) {
         Pixmap emptyBitmap = XCreateBitmapFromData(_eglut->native_dpy, _eglut->current->native.u.window, emptyData, 8, 8);
         Cursor cursor = XCreatePixmapCursor(_eglut->native_dpy, emptyBitmap, emptyBitmap, &black, &black, 0, 0);
         XDefineCursor(_eglut->native_dpy, _eglut->current->native.u.window, cursor);
-        XGrabPointer(_eglut->native_dpy, _eglut->current->native.u.window, True,
-                     PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
-                     GrabModeAsync, GrabModeAsync, None, cursor, CurrentTime);
+        if (_eglutRelativeMovementEnabled && !_eglutRelativeMovementRawMode) {
+            XGrabPointer(_eglut->native_dpy, _eglut->current->native.u.window, True,
+                         PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
+                         GrabModeAsync, GrabModeAsync, None, cursor, CurrentTime);
+        }
         XFreeCursor(_eglut->native_dpy, cursor);
         XFreePixmap(_eglut->native_dpy, emptyBitmap);
     } else if (visible == EGLUT_POINTER_VISIBLE) {
         XUndefineCursor(_eglut->native_dpy, _eglut->current->native.u.window);
-        XUngrabPointer(_eglut->native_dpy, CurrentTime);
+        if (_eglutRelativeMovementEnabled && !_eglutRelativeMovementRawMode)
+            XUngrabPointer(_eglut->native_dpy, CurrentTime);
     }
 }
 
