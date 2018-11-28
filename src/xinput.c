@@ -91,6 +91,9 @@ int _eglutXinputSetRawMotion(int raw) {
         XISetMask(mask, XI_ButtonRelease);
         XISetMask(mask, XI_RawMotion);
         XISetMask(mask, XI_Motion);
+        XISetMask(mask, XI_TouchBegin);
+        XISetMask(mask, XI_TouchEnd);
+        XISetMask(mask, XI_TouchUpdate);
 
         for (int i = 0; i < devc; i++) {
             if (devices[i].use == XIMasterPointer) {
