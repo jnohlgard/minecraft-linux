@@ -223,10 +223,13 @@ eglutInit(int argc, char **argv)
         }
     }
 
-    if (resname && strlen(resname) > 0)
+    if (resname && strlen(resname) > 0) {
         eglutInitX11ClassInstanceName(resname);
-    else if (argc > 0)
-        eglutInitX11ClassInstanceName(basename(argv[0]));
+    } else if (argc > 0) {
+        char* tmpbuf = strdup(argv[0]);
+        eglutInitX11ClassInstanceName(basename(tmpbuf));
+        free(tmpbuf);
+    }
 
     _eglutNativeInitDisplay();
     _eglut->dpy = eglGetDisplay(_eglut->native_dpy);
