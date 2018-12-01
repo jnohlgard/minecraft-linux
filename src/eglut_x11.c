@@ -588,6 +588,8 @@ void eglutSetMousePointerLocked(int locked) {
     eglutSetMousePointerVisiblity(!locked);
 }
 
+static int _eglutCursorGrabbed = 0;
+
 void eglutSetMousePointerVisiblity(int visible) {
     if (!_eglut->native_dpy)
         return;
@@ -604,13 +606,16 @@ void eglutSetMousePointerVisiblity(int visible) {
             XGrabPointer(_eglut->native_dpy, _eglut->current->native.u.window, True,
                          PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
                          GrabModeAsync, GrabModeAsync, None, cursor, CurrentTime);
+            _eglutCursorGrabbed = 1;
         }
         XFreeCursor(_eglut->native_dpy, cursor);
         XFreePixmap(_eglut->native_dpy, emptyBitmap);
     } else if (visible == EGLUT_POINTER_VISIBLE) {
         XUndefineCursor(_eglut->native_dpy, _eglut->current->native.u.window);
-        if (_eglutRelativeMovementEnabled && !_eglutRelativeMovementRawMode)
+        if (_eglutCursorGrabbed) {
             XUngrabPointer(_eglut->native_dpy, CurrentTime);
+            _eglutCursorGrabbed = 0;
+        }
     }
 }
 
