@@ -582,6 +582,8 @@ void eglutSetMousePointerLocked(int locked) {
         _eglutRelativeMovementLastY = eglutGetWindowHeight() / 2;
         eglutWarpMousePointer(_eglutRelativeMovementLastX, _eglutRelativeMovementLastY);
     }
+    if (locked && !_eglutRelativeMovementEnabled)
+        XSetInputFocus(_eglut->native_dpy, _eglut->current->native.u.window, RevertToNone, CurrentTime);
 
     _eglutRelativeMovementEnabled = locked;
     _eglutRelativeMovementRawMode = _eglutXinputSetRawMotion(locked) && locked;
