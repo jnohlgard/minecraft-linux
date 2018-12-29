@@ -544,7 +544,6 @@ _eglutNativeEventLoop(void)
 
             if (win->display_cb)
                 win->display_cb();
-            eglSwapBuffers(_eglut->dpy, win->surface);
         }
     }
 }
@@ -668,6 +667,11 @@ eglutSetClipboardText(const char* value)
     Atom clipboard = XInternAtom(_eglut->native_dpy, "CLIPBOARD", False);
     XSetSelectionOwner(_eglut->native_dpy, clipboard, _eglut->current->native.u.window, CurrentTime);
     XFlush(_eglut->native_dpy);
+}
+
+void
+eglutSwapBuffers() {
+    eglSwapBuffers(_eglut->dpy, _eglut->current->surface);
 }
 
 Display* eglutGetDisplay() {

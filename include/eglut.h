@@ -131,6 +131,7 @@ int eglutCreateWindow(const char *title);
 void eglutSetWindowIcon(const char *path);
 void eglutShowWindow();
 void eglutDestroyWindow(int win);
+void eglutSwapBuffers();
 
 int eglutGetWindowX(void);
 int eglutGetWindowY(void);
