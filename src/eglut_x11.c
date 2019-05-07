@@ -28,6 +28,7 @@
 #include <X11/X.h>
 #include <X11/keysym.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <malloc.h>
 #include <X11/extensions/XInput2.h>
@@ -147,6 +148,11 @@ _eglutNativeInitWindow(struct eglut_window *win, const char *title,
     if (im != NULL) {
         x11_ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, XNClientWindow, xwin, NULL);
     }
+
+    Atom wm_pid = XInternAtom(_eglut->native_dpy, "_NET_WM_PID", False);
+    Atom cardinal = XInternAtom(_eglut->native_dpy, "CARDINAL", False);
+    pid_t pid = getpid();
+    XChangeProperty(_eglut->native_dpy, xwin, wm_pid, cardinal, 32, PropModeReplace, (void*) &pid, sizeof(pid));
 }
 
 void eglutSetWindowIcon(const char *path)
