@@ -89,25 +89,13 @@ _eglutDestroyWindow(struct eglut_window *win)
     eglDestroyContext(_eglut->dpy, win->context);
 }
 
-static EGLConfig
-_eglutChooseConfig(void)
+static void
+_eglutAddCommonConfigAttrs(EGLint* config_attribs, int* i_ptr)
 {
-    EGLConfig config;
-    EGLint config_attribs[32];
-    EGLint renderable_type, num_configs, i;
+    EGLint renderable_type;
+    int i;
 
-    i = 0;
-    config_attribs[i++] = EGL_RED_SIZE;
-    config_attribs[i++] = 1;
-    config_attribs[i++] = EGL_GREEN_SIZE;
-    config_attribs[i++] = 1;
-    config_attribs[i++] = EGL_BLUE_SIZE;
-    config_attribs[i++] = 1;
-    config_attribs[i++] = EGL_DEPTH_SIZE;
-    config_attribs[i++] = 1;
-    config_attribs[i++] = EGL_STENCIL_SIZE;
-    config_attribs[i++] = 8;
-
+    i = *i_ptr;
     config_attribs[i++] = EGL_SURFACE_TYPE;
     config_attribs[i++] = _eglut->surface_type;
 
@@ -122,14 +110,54 @@ _eglutChooseConfig(void)
     if (_eglut->api_mask & EGLUT_OPENVG_BIT)
         renderable_type |= EGL_OPENVG_BIT;
     config_attribs[i++] = renderable_type;
+    *i_ptr = i;
+}
 
+static EGLConfig
+_eglutChooseConfig(void)
+{
+    EGLConfig config;
+    EGLint config_attribs[32];
+    EGLint num_configs, i;
+
+    i = 0;
+    config_attribs[i++] = EGL_RED_SIZE;
+    config_attribs[i++] = 1;
+    config_attribs[i++] = EGL_GREEN_SIZE;
+    config_attribs[i++] = 1;
+    config_attribs[i++] = EGL_BLUE_SIZE;
+    config_attribs[i++] = 1;
+    config_attribs[i++] = EGL_ALPHA_SIZE;
+    config_attribs[i++] = 1;
+    config_attribs[i++] = EGL_DEPTH_SIZE;
+    config_attribs[i++] = 1;
+    config_attribs[i++] = EGL_STENCIL_SIZE;
+    config_attribs[i++] = 8;
+    _eglutAddCommonConfigAttrs(config_attribs, &i);
     config_attribs[i] = EGL_NONE;
 
-    if (!eglChooseConfig(_eglut->dpy,
-                         config_attribs, &config, 1, &num_configs) || !num_configs)
-        _eglutFatal("failed to choose a config");
+    if (eglChooseConfig(_eglut->dpy, config_attribs, &config, 1, &num_configs) && num_configs)
+        return config;
 
-    return config;
+    i = 0;
+    config_attribs[i++] = EGL_RED_SIZE;
+    config_attribs[i++] = 1;
+    config_attribs[i++] = EGL_GREEN_SIZE;
+    config_attribs[i++] = 1;
+    config_attribs[i++] = EGL_BLUE_SIZE;
+    config_attribs[i++] = 1;
+    config_attribs[i++] = EGL_DEPTH_SIZE;
+    config_attribs[i++] = 1;
+    config_attribs[i++] = EGL_STENCIL_SIZE;
+    config_attribs[i++] = 8;
+    _eglutAddCommonConfigAttrs(config_attribs, &i);
+    config_attribs[i] = EGL_NONE;
+
+    if (eglChooseConfig(_eglut->dpy, config_attribs, &config, 1, &num_configs) && num_configs)
+        return config;
+
+    _eglutFatal("failed to choose a config");
+    return NULL;
 }
 
 static struct eglut_window *
