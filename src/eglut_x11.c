@@ -521,6 +521,24 @@ next_event(struct eglut_window *win)
 }
 
 void
+eglutPollEvents(void)
+{
+    struct eglut_window *win = _eglut->current;
+    while (XPending(_eglut->native_dpy) && !_eglut->redisplay)
+            next_event(win);
+
+    if (_eglutRelativeMovementEnabled) {
+        int cx = eglutGetWindowWidth() / 2;
+        int cy = eglutGetWindowHeight() / 2;
+        if (cx != _eglutRelativeMovementLastX || cy != _eglutRelativeMovementLastY) {
+            _eglutRelativeMovementLastX = cx;
+            _eglutRelativeMovementLastY = cy;
+            eglutWarpMousePointer(cx, cy);
+        }
+    }
+}
+
+void
 _eglutNativeEventLoop(void)
 {
     while (1) {

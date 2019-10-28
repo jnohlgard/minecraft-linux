@@ -134,6 +134,7 @@ void eglutDestroyWindow(int win);
 void eglutMakeCurrent(int win);
 void eglutSwapInterval(int interval);
 void eglutSwapBuffers();
+void eglutPollEvents(void);
 
 int eglutGetWindowX(void);
 int eglutGetWindowY(void);
