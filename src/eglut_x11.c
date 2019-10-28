@@ -680,6 +680,10 @@ eglutSwapBuffers() {
     eglSwapBuffers(_eglut->dpy, _eglut->current->surface);
 }
 
+void eglutSwapInterval(int interval) {
+    eglSwapInterval(_eglut->dpy, interval);
+}
+
 Display* eglutGetDisplay() {
     return _eglut->native_dpy;
 }

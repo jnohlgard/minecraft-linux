@@ -454,6 +454,20 @@ eglutCreateWindow(const char *title)
     return win->index;
 }
 
+void eglutMakeCurrent(int win)
+{
+    if(win) {
+        struct eglut_window *window = _eglut->current;
+
+        if (window->index != win)
+            return;
+        if (!eglMakeCurrent(_eglut->dpy, _eglut->current->surface, _eglut->current->surface, _eglut->current->context))
+            _eglutFatal("failed to make window current");
+    } else {
+        eglMakeCurrent(_eglut->dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    }
+}
+
 int
 eglutGetWindowX(void)
 {
