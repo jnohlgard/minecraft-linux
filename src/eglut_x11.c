@@ -524,7 +524,7 @@ void
 eglutPollEvents(void)
 {
     struct eglut_window *win = _eglut->current;
-    while (XPending(_eglut->native_dpy) && !_eglut->redisplay)
+    while (XPending(_eglut->native_dpy))
             next_event(win);
 
     if (_eglutRelativeMovementEnabled) {

@@ -456,7 +456,7 @@ eglutCreateWindow(const char *title)
 
 void eglutMakeCurrent(int win)
 {
-    if(win) {
+    if(win != -1) {
         struct eglut_window *window = _eglut->current;
 
         if (window->index != win)
