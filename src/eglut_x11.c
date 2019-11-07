@@ -525,7 +525,10 @@ eglutPollEvents(void)
 {
     struct eglut_window *win = _eglut->current;
     while (XPending(_eglut->native_dpy))
-            next_event(win);
+        next_event(win);
+
+    if (_eglut->idle_cb)
+        _eglut->idle_cb();
 
     if (_eglutRelativeMovementEnabled) {
         int cx = eglutGetWindowWidth() / 2;
