@@ -103,7 +103,7 @@ enum {
 typedef void (*EGLUTidleCB)(void);
 typedef void (*EGLUTreshapeCB)(int, int);
 typedef void (*EGLUTdisplayCB)(void);
-typedef void (*EGLUTkeyboardCB)(char[5], int);
+typedef void (*EGLUTkeyboardCB)(char*, int);
 typedef void (*EGLUTspecialCB)(int, int);
 typedef void (*EGLUTpasteCB)(const char*, int);
 typedef void (*EGLUTmouseCB)(int, int);
@@ -161,6 +161,7 @@ void eglutSetMousePointerVisiblity(int visible);
 void eglutSetMousePointerLocked(int locked);
 void eglutRequestPaste();
 void eglutSetClipboardText(const char* value);
+void eglutSetKeyboardState(int active);
 
 #ifdef __cplusplus
 }

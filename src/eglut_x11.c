@@ -23,6 +23,7 @@
  *    Chia-I Wu <olv@lunarg.com>
  */
 
+#include <locale.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/X.h>
@@ -40,6 +41,7 @@
 void
 _eglutNativeInitDisplay(void)
 {
+    XSetLocaleModifiers("");
     _eglut->native_dpy = XOpenDisplay(_eglut->display_name);
     if (!_eglut->native_dpy)
         _eglutFatal("failed to initialize native display");
@@ -337,8 +339,7 @@ next_event(struct eglut_window *win)
 
     /* block for next event */
     XNextEvent(_eglut->native_dpy, &event);
-
-    if (XFilterEvent(&event, win->native.u.window)) {
+    if((win->keyboardstate || event.type != KeyPress && event.type != KeyRelease) && XFilterEvent(&event, None)) {
         _eglut->redisplay = redraw;
         return;
     }
@@ -367,16 +368,22 @@ next_event(struct eglut_window *win)
         case KeyPress:
         case KeyRelease:
         {
-            char buffer[5];
-            memset(buffer, 0, 5);
+            char _buffer[8];
+            char* buffer = _buffer;
+            memset(_buffer, 0, sizeof(_buffer));
             KeySym sym;
             int r;
             int type;
             if (event.type == KeyPress) {
-                r = Xutf8LookupString(x11_ic, (XKeyPressedEvent*) &event, buffer, sizeof(buffer), &sym, NULL);
+                int status;
+                r = Xutf8LookupString(x11_ic, &event.xkey, buffer, sizeof(_buffer), &sym, &status);
+                if(status == XBufferOverflow) {
+                    buffer = malloc(r + 1);
+                    r = Xutf8LookupString(x11_ic, (XKeyPressedEvent*) &event, buffer, r + 1, &sym, &status);
+                }
                 type = EGLUT_KEY_PRESS;
             } else {
-                r = XLookupString(&event.xkey, buffer, sizeof(buffer), &sym, NULL);
+                r = XLookupString(&event.xkey, buffer, sizeof(_buffer), &sym, NULL);
                 type = EGLUT_KEY_RELEASE;
             }
 
@@ -406,6 +413,8 @@ next_event(struct eglut_window *win)
             }
             if (type != EGLUT_KEY_REPEAT)
                 redraw = 1;
+            if (buffer != _buffer)
+                free(buffer);
             break;
         }
         case MotionNotify:

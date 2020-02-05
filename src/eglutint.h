@@ -62,6 +62,7 @@ struct eglut_window {
     EGLUTtouchEndCB touch_end_cb;
     EGLUTfocusCB focus_cb;
     EGLUTcloseCB close_cb;
+    int keyboardstate;
 };
 
 struct eglut_state {

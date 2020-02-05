@@ -587,3 +587,8 @@ eglutCloseWindowFunc(EGLUTcloseCB func)
     struct eglut_window *win = _eglut->current;
     win->close_cb = func;
 }
+
+void eglutSetKeyboardState(int active) {
+    struct eglut_window *win = _eglut->current;
+    win->keyboardstate = active;
+}
