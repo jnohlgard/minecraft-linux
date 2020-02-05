@@ -41,6 +41,7 @@
 void
 _eglutNativeInitDisplay(void)
 {
+    setlocale(LC_CTYPE, "");
     XSetLocaleModifiers("");
     _eglut->native_dpy = XOpenDisplay(_eglut->display_name);
     if (!_eglut->native_dpy)
