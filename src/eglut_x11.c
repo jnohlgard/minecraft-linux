@@ -41,8 +41,12 @@
 void
 _eglutNativeInitDisplay(void)
 {
-    setlocale(LC_CTYPE, "");
-    XSetLocaleModifiers("");
+    char * res = getenv("MCPELAUNCHER_FEATURE_IME");
+    if(res && strcmp(res, "1") == 0) {
+        setlocale(LC_CTYPE, "");
+        XSetLocaleModifiers("");
+    }
+
     _eglut->native_dpy = XOpenDisplay(_eglut->display_name);
     if (!_eglut->native_dpy)
         _eglutFatal("failed to initialize native display");
@@ -375,36 +379,34 @@ next_event(struct eglut_window *win)
             KeySym sym;
             int r;
             int type;
-            if(!win->keyboardstate) {
-                if (event.type == KeyPress) {
-                    int status;
-                    r = Xutf8LookupString(x11_ic, &event.xkey, buffer, sizeof(_buffer), &sym, &status);
-                    if(status == XBufferOverflow) {
-                        buffer = malloc(r + 1);
-                        r = Xutf8LookupString(x11_ic, (XKeyPressedEvent*) &event, buffer, r + 1, &sym, &status);
-                    }
-                    type = EGLUT_KEY_PRESS;
-                } else {
-                    r = XLookupString(&event.xkey, buffer, sizeof(_buffer), &sym, NULL);
-                    type = EGLUT_KEY_RELEASE;
+            if (event.type == KeyPress) {
+                int status;
+                r = Xutf8LookupString(x11_ic, &event.xkey, buffer, sizeof(_buffer), &sym, &status);
+                if(status == XBufferOverflow) {
+                    buffer = malloc(r + 1);
+                    r = Xutf8LookupString(x11_ic, (XKeyPressedEvent*) &event, buffer, r + 1, &sym, &status);
                 }
+                type = EGLUT_KEY_PRESS;
+            } else {
+                r = XLookupString(&event.xkey, buffer, sizeof(_buffer), &sym, NULL);
+                type = EGLUT_KEY_RELEASE;
+            }
 
-                if (event.type == KeyRelease) {
-                    if (XEventsQueued(_eglut->native_dpy, QueuedAfterReading)) {
-                        XPeekEvent(_eglut->native_dpy, &ahead);
-                        if (ahead.type == KeyPress &&
-                            ahead.xkey.window == event.xkey.window &&
-                            ahead.xkey.keycode == event.xkey.keycode &&
-                            ahead.xkey.time == event.xkey.time) {
-                            type = EGLUT_KEY_REPEAT;
-                            XNextEvent(_eglut->native_dpy, &event);
-                        }
+            if (event.type == KeyRelease) {
+                if (XEventsQueued(_eglut->native_dpy, QueuedAfterReading)) {
+                    XPeekEvent(_eglut->native_dpy, &ahead);
+                    if (ahead.type == KeyPress &&
+                        ahead.xkey.window == event.xkey.window &&
+                        ahead.xkey.keycode == event.xkey.keycode &&
+                        ahead.xkey.time == event.xkey.time) {
+                        type = EGLUT_KEY_REPEAT;
+                        XNextEvent(_eglut->native_dpy, &event);
                     }
                 }
+            }
 
-                if (r > 0 && win->keyboard_cb) {
-                    win->keyboard_cb(buffer, type);
-                }
+            if (r > 0 && win->keyboard_cb) {
+                win->keyboard_cb(buffer, type);
             }
 
             if (win->special_cb) {
