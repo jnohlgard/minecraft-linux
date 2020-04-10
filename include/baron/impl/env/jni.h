@@ -5,6 +5,6 @@
 namespace Baron::Env {
  class JniEnv : public FakeJni::JniEnv {
  public:
-  using FakeJni::JniEnv::JniEnv;
+  JniEnv(const FakeJni::Jvm& vm);
  };
 }

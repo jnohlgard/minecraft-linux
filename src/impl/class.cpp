@@ -30,7 +30,7 @@ mid = new JMethodID(\
   env->GetJavaVM(&vm);\
   auto jvm = (Baron::Jvm *)vm;\
   jvalue value;\
-  value.l = jvm->fabricateInstance(*this);\
+  value.l = ((FakeJni::JniEnv *)env)->createLocalReference(jvm->fabricateInstance(this));\
   return value;\
  },\
  signature,\
@@ -38,7 +38,8 @@ mid = new JMethodID(\
  FakeJni::JMethodID::PUBLIC\
 );\
 }\
-return mid->directInvoke<jvalue>(vm, (void *)this, arg);
+FakeJni::LocalFrame frame (*(FakeJni::Jvm const *) vm);\
+return frame.getJniEnv().resolveReference(mid->directInvoke<jvalue>(frame.getJniEnv(), (void *)this, arg));
 
 namespace Baron::Internal {
  bool JClass::registerMethod(const FakeJni::JMethodID * mid, bool deallocate) const {
@@ -57,11 +58,11 @@ namespace Baron::Internal {
 //
 // }
 
- FakeJni::JObject * JClass::newInstance(const JavaVM * vm, const char * signature, CX::va_list_t& list) const {
+ std::shared_ptr<FakeJni::JObject> JClass::newInstance(const JavaVM * vm, const char * signature, CX::va_list_t& list) const {
   NEW_INSTANCE(list)
  }
 
- FakeJni::JObject * JClass::newInstance(const JavaVM * vm, const char * signature, const jvalue * values) const {
+ std::shared_ptr<FakeJni::JObject> JClass::newInstance(const JavaVM * vm, const char * signature, const jvalue * values) const {
   NEW_INSTANCE(values)
  }
 }

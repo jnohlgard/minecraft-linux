@@ -28,7 +28,7 @@ fprintf(\
 #endif
 
 #define CHECK_BLACKLIST \
-FakeJni::JClass * clazz = *jclazz;\
+auto clazz = std::dynamic_pointer_cast<FakeJni::JClass>(env.resolveReference(jclazz)); \
 const auto className = clazz->getName();\
 if (vm.isClassBlacklisted(className) || vm.isFieldBlacklisted(name, sig, className)) {\
  LOG_BLACKLIST_MATCH\
@@ -54,7 +54,6 @@ namespace Baron::Interface {
   auto fid = (FakeJni::JFieldID *)FakeJni::NativeInterface::getFieldID(jclazz, name, sig);
   if (!fid) {
    fid = new Baron::Internal::JFieldID(fabricatedGetCallback, fabricatedSetCallback, name, sig, FakeJni::JFieldID::PUBLIC);
-   FakeJni::JClass * clazz = *jclazz;
    clazz->registerField(fid);
    LOG_FABRICATED_FIELD
   }
@@ -68,7 +67,6 @@ namespace Baron::Interface {
   auto fid = (FakeJni::JFieldID *)FakeJni::NativeInterface::getStaticFieldID(jclazz, name, sig);
   if (!fid) {
    fid = new Baron::Internal::JFieldID(fabricatedGetCallback, fabricatedSetCallback, name, sig, FakeJni::JFieldID::PUBLIC | FakeJni::JFieldID::STATIC);
-   FakeJni::JClass * clazz = *jclazz;
    clazz->registerField(fid);
    LOG_FABRICATED_FIELD
   }

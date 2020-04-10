@@ -2,14 +2,13 @@
 
 namespace Baron::Internal {
  jvalue JFieldID::get(const JavaVM * vm, FakeJni::JObject * obj) const {
-  jobject jobj = *obj;
   auto jvm = (Baron::Jvm *)vm;
-  if (jvm->isFabricated(jobj)) {
+  if (jvm->isFabricated(obj)) {
    auto clazz = resolveType(jvm);
    if (!clazz) {
     throw std::runtime_error("FATAL: Tried to fabricate a value for an unregistered type!");
    }
-   auto pair = std::pair{jobj, this};
+   auto pair = std::pair{obj, this};
    jvalue value;
    bool found = false;
    for (auto &[k, v]: jvm->fabricatedValues) {
@@ -21,7 +20,8 @@ namespace Baron::Internal {
    if (found) {
     value = jvm->fabricatedValues[pair];
    } else {
-    value = jvm->fabricateValue(*clazz);
+    FakeJni::LocalFrame frame(*jvm);
+    value = jvm->fabricateValue(frame.getJniEnv(), clazz);
     jvm->fabricatedValues[pair] = value;
    }
    return value;
@@ -30,15 +30,15 @@ namespace Baron::Internal {
  }
 
  void JFieldID::set(const JavaVM * vm, FakeJni::JObject * obj, void * value) const {
-  jobject jobj = *obj;
   auto jvm = (Baron::Jvm *)vm;
-  if (jvm->isFabricated(jobj)) {
+  if (jvm->isFabricated(obj)) {
    auto clazz = resolveType(jvm);
    if (!clazz) {
     throw std::runtime_error("FATAL: Tried to fabricate a value for an unregistered type!");
    }
-   auto pair = std::pair{jobj, this};
-   jvm->fabricatedValues[pair] = jvm->fabricateValue(*clazz);
+   auto pair = std::pair{obj, this};
+   FakeJni::LocalFrame frame(*jvm);
+   jvm->fabricatedValues[pair] = jvm->fabricateValue(frame.getJniEnv(), clazz);
   }
   FakeJni::JFieldID::set(vm, obj, value);
  }

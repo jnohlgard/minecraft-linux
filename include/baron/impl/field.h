@@ -15,12 +15,7 @@ namespace Baron::Internal {
  private:
   const FakeJni::JClass * resolveType(const Jvm * vm) const {
    const auto signature = getSignature();
-   for (auto& clz : vm->getClasses()) {
-    if (!strcmp(signature, clz->getName())) {
-     return clz;
-    }
-   }
-   return nullptr;
+   return vm->findClass(signature).get();
   }
  };
 }
