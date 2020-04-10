@@ -34,10 +34,8 @@ set(BUILD_FAKE_JNI_EXAMPLES OFF CACHE BOOL "")
 string(APPEND CMAKE_CXX_FLAGS " ${compiler_flags}")
 string(APPEND CMAKE_C_FLAGS " ${compiler_flags}")
 
-add_subdirectory(fake-jni)
-
 file(GLOB_RECURSE BARON_SRC "src/**.cpp")
-add_library(baron SHARED ${BARON_SRC})
+add_library(baron STATIC ${BARON_SRC})
 target_link_libraries(baron fake-jni)
 target_include_directories(baron PUBLIC include)
 target_compile_options(baron PUBLIC
