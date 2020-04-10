@@ -13,7 +13,7 @@ namespace Baron::Internal {
 //  bool unregisterMethod(const FakeJni::JMethodID * mid) const noexcept override;
   bool registerField(FakeJni::JFieldID * fid, bool deallocate = true) const noexcept override;
 //  bool unregisterField(FakeJni::JFieldID * fid) const noexcept override;
-  JObject * newInstance(const JavaVM * vm, const char * signature, CX::va_list_t& list) const override;
-  JObject * newInstance(const JavaVM * vm, const char * signature, const jvalue * values) const override;
+  std::shared_ptr<JObject> newInstance(const JavaVM * vm, const char * signature, CX::va_list_t& list) const override;
+  std::shared_ptr<JObject> newInstance(const JavaVM * vm, const char * signature, const jvalue * values) const override;
  };
 }

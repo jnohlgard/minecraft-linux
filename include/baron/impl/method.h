@@ -7,7 +7,7 @@ namespace Baron::Internal {
  public:
   using FakeJni::JMethodID::JMethodID;
 
-  jvalue virtualInvoke(const JavaVM * vm, void * clazzOrObj, CX::va_list_t& list) const override;
-  jvalue virtualInvoke(const JavaVM * vm, void * clazzOrObj, const jvalue * args) const override;
+  jvalue virtualInvoke(const FakeJni::JniEnv &env, FakeJni::JObject * clazzOrObj, CX::va_list_t& list) const override;
+  jvalue virtualInvoke(const FakeJni::JniEnv &env, FakeJni::JObject * clazzOrObj, const jvalue * args) const override;
  };
 }

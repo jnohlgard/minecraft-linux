@@ -10,7 +10,7 @@ namespace Baron::Interface {
  public:
   Jvm& vm;
 
-  NativeInterface(const FakeJni::Jvm& vm);
+  NativeInterface(FakeJni::JniEnv& env);
 
   //inpl/interface/native/object.cpp
   jobject allocObject(jclass) const override;
@@ -29,5 +29,8 @@ namespace Baron::Interface {
   //inpl/interface/native/field.cpp
   jfieldID getFieldID(jclass, const char *, const char *) const override;
   jfieldID getStaticFieldID(jclass, const char *, const char *) const override;
+
+ private:
+   std::shared_ptr<FakeJni::JClass const> resolveReturnClass(const char *sig) const;
  };
 }

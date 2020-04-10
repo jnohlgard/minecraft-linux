@@ -11,6 +11,8 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <fake-jni/string.h>
+#include <jni.h>
 
 #ifdef BARON_DEBUG
 #define DEBUG_DOUBLE_BLACKLIST \
@@ -25,13 +27,12 @@ namespace Baron {
  //Jvm members
  Jvm::Jvm(FILE * log) : FakeJni::Jvm(log) {
   setInvokeInterface<Interface::InvokeInterface>();
-  setNativeInterface<Interface::NativeInterface>();
   setJvmtiInterface<Interface::JvmtiInterface>();
-  setJniEnv<Env::JniEnv>();
+  setJniEnvType<Env::JniEnv>();
   setJvmtiEnv<Env::JvmtiEnv>();
  }
 
- const FakeJni::JClass * Jvm::findClass(const char * name) const {
+ std::shared_ptr<const FakeJni::JClass> Jvm::findClass(const char * name) const {
   using namespace FakeJni;
   auto& ref = const_cast<Jvm &>(*this);
   //Ignore class lookups for blacklisted classes
@@ -42,11 +43,11 @@ namespace Baron {
    return nullptr;
   }
   auto clazz = FakeJni::Jvm::findClass(name);
-  if (!clazz) {
-   clazz = new Baron::Internal::JClass(name);
-   ref.registerClass(clazz, true);
+  if (!clazz && name[0] != '[') {
+   clazz = std::make_shared<Baron::Internal::JClass>(name, (std::string("L") + name + ";").c_str());
+   ref.registerClass(clazz);
 #ifdef BARON_DEBUG
-   fprintf(getLog(), "BARON INFO: Fabricated class '%s' -> 0x%lx\n", name, (intptr_t)clazz);
+   fprintf(getLog(), "BARON INFO: Fabricated class '%s' -> 0x%lx\n", name, (intptr_t)clazz.get());
 #endif
   }
   return clazz;
@@ -56,6 +57,7 @@ namespace Baron {
  // - field and function access / invocation counts
  // - field and function access locations (with stack traces once libunwind is integrated)
  jint Jvm::destroy() {
+     /*
   auto & classes = getClasses();
   const auto & log = getLog();
   if (classes.size() > 0) {
@@ -85,7 +87,7 @@ namespace Baron {
    }
   } else {
    fprintf(log, "BARON INFO: No classes were registered during execution.\n");
-  }
+  }*/
   return JNI_OK;
  }
 
@@ -155,31 +157,32 @@ namespace Baron {
   blacklistedMethods[clazz].insert(std::string(name) + sig);
  }
 
- jobject Jvm::fabricateInstance(jclass jclazz) const {
+ std::shared_ptr<FakeJni::JObject> Jvm::fabricateInstance(const FakeJni::JClass * jclazz) const {
   auto& ref = const_cast<Jvm &>(*this);
-  auto pinst = CX::union_cast<char **>(&lastInstance);
-  *pinst += 1;
-  auto inst = (jobject)*pinst;
-  ref.fabricatedInstances.insert(inst);
-  ref.fabricatedClassMappings[*jclazz].insert(inst);
+  auto inst = std::make_shared<FakeJni::JObject>();
+  ref.fabricatedInstancesHolder.insert(inst);
+  ref.fabricatedInstances.insert(inst.get());
+  ref.fabricatedClassMappings[jclazz].insert(inst.get());
   return inst;
  }
 
- jvalue Jvm::fabricateValue(jclass jclazz) const {
+ jvalue Jvm::fabricateValue(FakeJni::JniEnv &env, const FakeJni::JClass * jclazz) const {
   jvalue value;
-  FakeJni::JClass *clazz = *jclazz;
-  if (clazz->isArbitrary) {
-   value.l = fabricateInstance(jclazz);
+  if (jclazz->isArbitrary) {
+   value.l = env.createLocalReference(fabricateInstance(jclazz));
   } else {
-   if (!clazz->isPrimitive) {
-    //TODO instance fabrication for non-arbitrary classes
-    throw std::runtime_error("FATAL: Value fabrication for non-primitive types is not currently supported!");
+   if (!strcmp(jclazz->getName(), "java/lang/String"))
+    return env.createLocalReference(std::make_shared<FakeJni::JString>(""));
+   if (!jclazz->isPrimitive) {
+    value.l = 0;
+   } else {
+    value.j = 0;
    }
   }
   return value;
  }
 
- bool Jvm::isFabricated(jobject jobj) const noexcept {
+ bool Jvm::isFabricated(const FakeJni::JObject * jobj) const noexcept {
   return fabricatedInstances.find(jobj) != fabricatedInstances.end();
  }
 }
