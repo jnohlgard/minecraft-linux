@@ -5,10 +5,12 @@
 extern "C" {
 #endif
 
+#ifndef EGLUT_NO_X11_INCLUDE
 #include <X11/Xlib.h>
 
 Display* eglutGetDisplay();
 Window eglutGetWindowHandle();
+#endif
 
 void eglutInitX11ClassInstanceName(const char *value);
 void eglutInitX11ClassName(const char *value);
