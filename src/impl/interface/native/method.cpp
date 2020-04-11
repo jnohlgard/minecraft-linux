@@ -16,7 +16,7 @@ fprintf(\
 
 #ifdef BARON_DEBUG
 #define LOG_FABRICATED_METHOD \
-fprintf(vm.getLog(), "BARON INFO: Fabricated method '%s%s' -> 0x%lx\n", name, sig, (intptr_t)mid);
+fprintf(vm->getLog(), "BARON INFO: Fabricated method '%s%s' -> 0x%lx\n", name, sig, (intptr_t)mid);
 #else
 #define LOG_FABRICATED_METHOD
 #endif
@@ -31,17 +31,18 @@ if (vm.isClassBlacklisted(className) || vm.isMethodBlacklisted(name, sig, classN
 
 #ifdef BARON_DEBUG
 #define LOG_ARBITRARY_CALLBACK \
-const auto& log = vm.getLog();\
+const auto& log = vm->getLog();\
 fprintf(log, "BARON INFO: Invoked fabricated function!\n");
 #else
 #define LOG_ARBITRARY_CALLBACK
 #endif
 
 #define DEFINE_ARBITRARY_CALLBACK \
+Jvm *vm = &this->vm;\
 auto retClazz = resolveReturnClass(sig);\
 const auto callback = [=](JNIEnv * jenv, jobject jobj, jvalue * values) -> jvalue {\
  LOG_ARBITRARY_CALLBACK\
- return vm.fabricateValue(*(FakeJni::JniEnv *) jenv, retClazz.get());\
+ return vm->fabricateValue(*(FakeJni::JniEnv *) jenv, retClazz.get());\
 };
 
 //fprintf(log, "BARON INFO: Invoked fabricated function: %s::%s%s\n", className, name, sig);
