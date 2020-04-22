@@ -88,4 +88,6 @@ public:
         return findGameFile("assets/icon.png");
     }
 
+    static const char *getAbiDir();
+
 };

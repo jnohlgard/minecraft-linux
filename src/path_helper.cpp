@@ -16,7 +16,7 @@ PathHelper::PathInfo PathHelper::pathInfo;
 PathHelper::PathInfo::PathInfo() {
     appDir = findAppDir();
     homeDir = findUserHome();
-    if (fileExists(getWorkingDir() + "libs/libminecraftpe.so")) {
+    if (fileExists(getWorkingDir() + "lib/" + getAbiDir() + "/libminecraftpe.so")) {
         overrideDataDir = getWorkingDir();
         return;
     }
@@ -181,4 +181,14 @@ void PathHelper::findAllDataFiles(std::string const& path, std::function<void(st
     p = getParentDir(pathInfo.appDir) + "/share/mcpelauncher/" + path;
     if (fileExists(p))
         f(p);
+}
+
+const char *PathHelper::getAbiDir() {
+#if defined(__x86_64__)
+    return "x86_64";
+#elif defined(__i386__)
+    return "i386";
+#else
+    return "unsupported";
+#endif
 }
