@@ -187,7 +187,7 @@ const char *PathHelper::getAbiDir() {
 #if defined(__x86_64__)
     return "x86_64";
 #elif defined(__i386__)
-    return "i386";
+    return "x86";
 #else
     return "unsupported";
 #endif
