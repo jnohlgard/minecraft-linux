@@ -16,16 +16,16 @@ epoll_create(int size)
 	return kqueue();
 }
 
-// int
-// epoll_create1(int flags)
-// {
-// 	if (flags != EPOLL_CLOEXEC) {
-// 		errno = EINVAL;
-// 		return -1;
-// 	}
-//
-// 	return kqueue();
-// }
+ int
+ epoll_create1(int flags)
+ {
+ 	if (flags != EPOLL_CLOEXEC) {
+ 		errno = EINVAL;
+ 		return -1;
+ 	}
+
+ 	return kqueue();
+ }
 
 #define KEY_BITS (20)
 #define VAL_BITS (32 - KEY_BITS)
