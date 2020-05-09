@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <strings.h>
+#include <stdexcept>
 #include "arg_parser.h"
 
 namespace argparser {
