@@ -19,7 +19,7 @@ public:
     const char* peek() {
         if (argc <= 0)
             return nullptr;
-        return *(argv + 1);
+        return *argv;
     }
 
     const char* next_or_null() {
