@@ -16,7 +16,7 @@ fprintf(\
 
 #ifdef BARON_DEBUG
 #define LOG_FABRICATED_METHOD \
-fprintf(vm->getLog(), "BARON INFO: Fabricated method '%s%s' -> 0x%lx\n", name, sig, (intptr_t)mid);
+fprintf(vm->getLog(), "BARON INFO: Fabricated method '%s%s' -> 0x%lx on class '%s'\n", name, sig, (intptr_t)mid, className);
 #else
 #define LOG_FABRICATED_METHOD
 #endif

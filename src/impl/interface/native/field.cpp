@@ -18,10 +18,11 @@ fprintf(\
 #define LOG_FABRICATED_FIELD \
 fprintf(\
  vm.getLog(),\
- "BARON INFO: Fabricated field %s::%s -> 0x%lx\n",\
+ "BARON INFO: Fabricated field %s::%s -> 0x%lx on class '%s'\n",\
  name,\
  sig,\
- (intptr_t)fid\
+ (intptr_t)fid,\
+ className\
 );
 #else
 #define LOG_FABRICATED_FIELD
