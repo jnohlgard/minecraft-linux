@@ -32,7 +32,7 @@ if (vm.isClassBlacklisted(className) || vm.isMethodBlacklisted(name, sig, classN
 #ifdef BARON_DEBUG
 #define LOG_ARBITRARY_CALLBACK \
 const auto& log = vm->getLog();\
-fprintf(log, "BARON INFO: Invoked fabricated function!\n");
+fprintf(log, "BARON INFO: Invoked fabricated function: %s::%s%s\n", className, name, sig);
 #else
 #define LOG_ARBITRARY_CALLBACK
 #endif
@@ -45,7 +45,6 @@ const auto callback = [=](JNIEnv * jenv, jobject jobj, jvalue * values) -> jvalu
  return vm->fabricateValue(*(FakeJni::JniEnv *) jenv, retClazz.get());\
 };
 
-//fprintf(log, "BARON INFO: Invoked fabricated function: %s::%s%s\n", className, name, sig);
 
 //TODO once fake-jni supports user-defined core classes, append the backtrace to the JMethodID for later debugging
 namespace Baron::Interface {

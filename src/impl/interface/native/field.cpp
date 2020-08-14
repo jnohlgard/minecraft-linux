@@ -28,6 +28,17 @@ fprintf(\
 #define LOG_FABRICATED_FIELD
 #endif
 
+#ifdef BARON_DEBUG
+#define LOG_GET_FABRICATED_FIELD \
+const auto& log = vm.getLog();\
+fprintf(log, "BARON INFO: Get access to fabricated field: %s::%s%s\n", className, name, sig);
+#define LOG_SET_FABRICATED_FIELD \
+const auto& log = vm.getLog();\
+fprintf(log, "BARON INFO: Set access to fabricated field: %s::%s%s\n", className, name, sig);
+#else
+#define LOG_SET_FABRICATED_FIELD
+#endif
+
 #define CHECK_BLACKLIST \
 auto clazz = std::dynamic_pointer_cast<FakeJni::JClass>(env.resolveReference(jclazz)); \
 const auto className = clazz->getName();\
@@ -36,15 +47,14 @@ if (vm.isClassBlacklisted(className) || vm.isFieldBlacklisted(name, sig, classNa
  return nullptr;\
 }
 
-//TODO
-static void * fabricatedGetCallback(void * inst) {
- return nullptr;
-}
-
-//TODO
-static void fabricatedSetCallback(void * inst, void * value) {
-
-}
+#define DEFINE_ARBITRARY_CALLBACKS \
+const auto fabricatedGetCallback = [=](void * inst) -> void * {\
+ LOG_GET_FABRICATED_FIELD\
+ return nullptr;\
+};\
+const auto fabricatedSetCallback = [=](void * inst, void * value) -> void {\
+ LOG_SET_FABRICATED_FIELD\
+};
 
 //TODO once fake-jni supports user-defined core classes, append the backtrace to the JFieldID for later debugging
 namespace Baron::Interface {
@@ -52,6 +62,7 @@ namespace Baron::Interface {
  //TODO convert to empty arbitrary JFieldID
  jfieldID NativeInterface::getFieldID(jclass jclazz, const char * name, const char * sig) const {
   CHECK_BLACKLIST
+  DEFINE_ARBITRARY_CALLBACKS
   auto fid = (FakeJni::JFieldID *)FakeJni::NativeInterface::getFieldID(jclazz, name, sig);
   if (!fid) {
    fid = new Baron::Internal::JFieldID(fabricatedGetCallback, fabricatedSetCallback, name, sig, FakeJni::JFieldID::PUBLIC);
@@ -65,6 +76,7 @@ namespace Baron::Interface {
  //TODO create backtrace of invocation
  jfieldID NativeInterface::getStaticFieldID(jclass jclazz, const char * name, const char * sig) const {
   CHECK_BLACKLIST
+  DEFINE_ARBITRARY_CALLBACKS
   auto fid = (FakeJni::JFieldID *)FakeJni::NativeInterface::getStaticFieldID(jclazz, name, sig);
   if (!fid) {
    fid = new Baron::Internal::JFieldID(fabricatedGetCallback, fabricatedSetCallback, name, sig, FakeJni::JFieldID::PUBLIC | FakeJni::JFieldID::STATIC);
