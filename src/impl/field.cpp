@@ -1,8 +1,8 @@
 #include "baron/impl/field.h"
 
 namespace Baron::Internal {
- jvalue JFieldID::get(const JavaVM * vm, FakeJni::JObject * obj) const {
-  auto jvm = (Baron::Jvm *)vm;
+ jvalue JFieldID::get(const FakeJni::JniEnv &env, FakeJni::JObject * obj) const {
+  auto jvm = (Baron::Jvm *)&env.vm;
   if (jvm->isFabricated(obj)) {
    auto clazz = resolveType(jvm);
    if (!clazz) {
@@ -26,11 +26,11 @@ namespace Baron::Internal {
    }
    return value;
   }
-  return FakeJni::JFieldID::get(vm, obj);
+  return FakeJni::JFieldID::get(env, obj);
  }
 
- void JFieldID::set(const JavaVM * vm, FakeJni::JObject * obj, void * value) const {
-  auto jvm = (Baron::Jvm *)vm;
+ void JFieldID::set(const FakeJni::JniEnv &env, FakeJni::JObject * obj, void * value) const {
+  auto jvm = (Baron::Jvm *)&env.vm;
   if (jvm->isFabricated(obj)) {
    auto clazz = resolveType(jvm);
    if (!clazz) {
@@ -40,6 +40,6 @@ namespace Baron::Internal {
    FakeJni::LocalFrame frame(*jvm);
    jvm->fabricatedValues[pair] = jvm->fabricateValue(frame.getJniEnv(), clazz);
   }
-  FakeJni::JFieldID::set(vm, obj, value);
+  FakeJni::JFieldID::set(env, obj, value);
  }
 }

@@ -9,8 +9,8 @@ namespace Baron::Internal {
  public:
   using FakeJni::JFieldID::JFieldID;
 
-  jvalue get(const JavaVM * vm, FakeJni::JObject * obj) const override;
-  void set(const JavaVM * vm, FakeJni::JObject * obj, void * value) const override;
+  jvalue get(const FakeJni::JniEnv &env, FakeJni::JObject * obj) const override;
+  void set(const FakeJni::JniEnv &env, FakeJni::JObject * obj, void * value) const override;
 
  private:
   const FakeJni::JClass * resolveType(const Jvm * vm) const {
