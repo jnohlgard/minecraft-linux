@@ -36,6 +36,7 @@ fprintf(log, "BARON INFO: Get access to fabricated field: %s::%s%s\n", className
 const auto& log = vm.getLog();\
 fprintf(log, "BARON INFO: Set access to fabricated field: %s::%s%s\n", className, name, sig);
 #else
+#define LOG_GET_FABRICATED_FIELD
 #define LOG_SET_FABRICATED_FIELD
 #endif
 
