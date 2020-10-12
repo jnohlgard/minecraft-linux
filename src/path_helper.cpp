@@ -190,6 +190,8 @@ const char *PathHelper::getAbiDir() {
     return "x86";
 #elif defined(__aarch64__)
     return "arm64-v8a";
+#elif defined(__arm__)
+    return "armeabi-v7a";
 #else
     return "unsupported";
 #endif
