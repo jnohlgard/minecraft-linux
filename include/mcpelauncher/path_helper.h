@@ -88,6 +88,10 @@ public:
         return findGameFile("assets/icon.png");
     }
 
+    static std::string getAppDir() {
+        return pathInfo.appDir;
+    }
+
     static const char *getAbiDir();
 
 };
