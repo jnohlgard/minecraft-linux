@@ -29,6 +29,7 @@
 #include <X11/X.h>
 #include <X11/keysym.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <malloc.h>
@@ -379,16 +380,19 @@ next_event(struct eglut_window *win)
             KeySym sym;
             int r;
             int type;
-            if (event.type == KeyPress) {
+            {
                 int status;
                 r = Xutf8LookupString(x11_ic, &event.xkey, buffer, sizeof(_buffer), &sym, &status);
                 if(status == XBufferOverflow) {
                     buffer = malloc(r + 1);
                     r = Xutf8LookupString(x11_ic, (XKeyPressedEvent*) &event, buffer, r + 1, &sym, &status);
                 }
+                // Force keycodes to not contain modifiers like shift
+                sym = XLookupKeysym(&event.xkey, 0);
+            }
+            if (event.type == KeyPress) {
                 type = EGLUT_KEY_PRESS;
             } else {
-                r = XLookupString(&event.xkey, buffer, sizeof(_buffer), &sym, NULL);
                 type = EGLUT_KEY_RELEASE;
             }
 
@@ -522,7 +526,7 @@ next_event(struct eglut_window *win)
             if (!XGetWindowProperty(_eglut->native_dpy, _eglut->current->native.u.window, app_cb_atom, 0, 65536, False,
                                     utf8_string, &type, &format, &length, &remaining, &data) && data) {
                 if (win->paste_cb)
-                    win->paste_cb(data, length);
+                    win->paste_cb((const char *)data, length);
                 XFree(data);
             }
             break;
