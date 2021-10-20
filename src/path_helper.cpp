@@ -118,6 +118,13 @@ std::string PathHelper::findDataFile(std::string const& path) {
         p = pathInfo.overrideDataDir + path;
         if (fileExists(p))
             return p;
+    } else {
+        p = pathInfo.appDir + "/" + path;
+        if (fileExists(p))
+            return p;
+        p = pathInfo.dataHome + "/" + appDirName + "/" + path;
+        if (fileExists(p))
+            return p;
     }
 #ifdef DEV_EXTRA_PATHS
     for (const char* p = DEV_EXTRA_PATHS, *pn = p; pn != nullptr; p = pn + 1) {
@@ -129,14 +136,6 @@ std::string PathHelper::findDataFile(std::string const& path) {
             return s;
     }
 #endif
-    if (pathInfo.overrideDataDir.empty()) {
-        p = pathInfo.appDir + "/" + path;
-        if (fileExists(p))
-            return p;
-        p = pathInfo.dataHome + "/" + appDirName + "/" + path;
-        if (fileExists(p))
-            return p;
-    }
     for (const auto& dir : pathInfo.dataDirs) {
         p = dir + "/" + appDirName + "/" + path;
         if (fileExists(p))
@@ -154,6 +153,13 @@ void PathHelper::findAllDataFiles(std::string const& path, std::function<void(st
         p = pathInfo.overrideDataDir + path;
         if (fileExists(p))
             f(p);
+    } else {
+        p = pathInfo.appDir + "/" + path;
+        if (fileExists(p))
+            f(p);
+        p = pathInfo.dataHome + "/" + appDirName + "/" + path;
+        if (fileExists(p))
+            f(p);
     }
 #ifdef DEV_EXTRA_PATHS
     for (const char *p = DEV_EXTRA_PATHS, *pn = p; pn != nullptr; p = pn + 1) {
@@ -165,14 +171,6 @@ void PathHelper::findAllDataFiles(std::string const& path, std::function<void(st
             f(s);
     }
 #endif
-    if (pathInfo.overrideDataDir.empty()) {
-        p = pathInfo.appDir + "/" + path;
-        if (fileExists(p))
-            f(p);
-        p = pathInfo.dataHome + "/" + appDirName + "/" + path;
-        if (fileExists(p))
-            f(p);
-    }
     for (const auto& dir : pathInfo.dataDirs) {
         p = dir + "/" + appDirName + "/" + path;
         if (fileExists(p))
