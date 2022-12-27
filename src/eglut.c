@@ -362,7 +362,7 @@ _eglutReadPNG(const char *filename, unsigned int *width, unsigned int *height) {
     int depth, colorType;
     png_size_t row_bytes;
     png_byte **rows;
-    char* data;
+    png_byte *data;
 
     file = fopen(filename, "r");
     if (!file) {
