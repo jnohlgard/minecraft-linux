@@ -345,7 +345,7 @@ next_event(struct eglut_window *win)
 
     /* block for next event */
     XNextEvent(_eglut->native_dpy, &event);
-    if((win->keyboardstate || event.type != KeyPress && event.type != KeyRelease) && XFilterEvent(&event, None)) {
+    if((win->keyboardstate || (event.type != KeyPress && event.type != KeyRelease)) && XFilterEvent(&event, None)) {
         _eglut->redisplay = redraw;
         return;
     }
