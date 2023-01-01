@@ -10,15 +10,18 @@
 [submodule "properties-parser"]
 	path = properties-parser
 	url = ../properties-parser.git
+[submodule "arg-parser"]
+	path = arg-parser
+	url = ../arg-parser.git
+[submodule "rapidxml"]
+	path = rapidxml
+	url = ../rapidxml.git
 [submodule "simple-ipc"]
 	path = simple-ipc
 	url = ../../MCMrARM/simple-ipc.git
 [submodule "daemon-utils"]
 	path = daemon-utils
 	url = ../daemon-utils.git
-[submodule "msa-daemon-client"]
-	path = msa-daemon-client
-	url = ../msa-daemon-client.git
 [submodule "eglut"]
 	path = eglut
 	url = ../eglut.git
@@ -46,9 +49,6 @@
 [submodule "mcpelauncher-client"]
 	path = mcpelauncher-client
 	url = ../mcpelauncher-client.git
-[submodule "arg-parser"]
-	path = arg-parser
-	url = ../arg-parser.git
 [submodule "mcpelauncher-linux-bin"]
 	path = mcpelauncher-linux-bin
 	url = ../mcpelauncher-linux-bin.git
@@ -103,3 +103,18 @@
 [submodule "mcpelauncher-ui-qt"]
 	path = mcpelauncher-ui-qt
 	url = ../mcpelauncher-ui-qt.git
+[submodule "msa"]
+	path = msa
+	url = ../msa.git
+[submodule "msa-daemon"]
+	path = msa-daemon
+	url = ../msa-daemon.git
+[submodule "msa-daemon-client"]
+	path = msa-daemon-client
+	url = ../msa-daemon-client.git
+[submodule "msa-ui-gtk"]
+	path = msa-ui-gtk
+	url = ../msa-ui-gtk.git
+[submodule "msa-ui-qt"]
+	path = msa-ui-qt
+	url = ../msa-ui-qt.git
