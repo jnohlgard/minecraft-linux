@@ -1,120 +1,15 @@
-[submodule "logger"]
-	path = logger
-	url = ../logger.git
-[submodule "base64"]
-	path = base64
-	url = ../base64.git
-[submodule "file-util"]
-	path = file-util
-	url = ../file-util.git
-[submodule "properties-parser"]
-	path = properties-parser
-	url = ../properties-parser.git
-[submodule "arg-parser"]
-	path = arg-parser
-	url = ../arg-parser.git
-[submodule "rapidxml"]
-	path = rapidxml
-	url = ../rapidxml.git
-[submodule "simple-ipc"]
-	path = simple-ipc
-	url = ../../MCMrARM/simple-ipc.git
-[submodule "daemon-utils"]
-	path = daemon-utils
-	url = ../daemon-utils.git
-[submodule "eglut"]
-	path = eglut
-	url = ../eglut.git
-[submodule "linux-gamepad"]
-	path = linux-gamepad
-	url = ../../MCMrARM/linux-gamepad.git
-[submodule "game-window"]
-	path = game-window
-	url = ../game-window.git
-[submodule "file-picker"]
-	path = file-picker
-	url = ../file-picker.git
-[submodule "cll-telemetry"]
-	path = cll-telemetry
-	url = ../cll-telemetry.git
-[submodule "minecraft-imported-symbols"]
-	path = minecraft-imported-symbols
-	url = ../minecraft-imported-symbols.git
-[submodule "mcpelauncher-common"]
-	path = mcpelauncher-common
-	url = ../mcpelauncher-common.git
-[submodule "mcpelauncher-core"]
-	path = mcpelauncher-core
-	url = ../mcpelauncher-core.git
-[submodule "mcpelauncher-client"]
-	path = mcpelauncher-client
-	url = ../mcpelauncher-client.git
-[submodule "mcpelauncher-linux-bin"]
-	path = mcpelauncher-linux-bin
-	url = ../mcpelauncher-linux-bin.git
-[submodule "epoll-shim"]
-	path = epoll-shim
-	url = ../epoll-shim.git
-[submodule "osx-elf-header"]
-	path = osx-elf-header
-	url = ../osx-elf-header.git
-[submodule "mcpelauncher-mac-bin"]
-	path = mcpelauncher-mac-bin
-	url = ../mcpelauncher-mac-bin.git
-[submodule "fake-jni"]
-	path = fake-jni
-	url = ../fake-jni.git
-[submodule "baron"]
-	path = baron
-	url = ../baron.git
-[submodule "android-support-headers"]
-	path = android-support-headers
-	url = ../android-support-headers.git
-[submodule "libc-shim"]
-	path = libc-shim
-	url = ../libc-shim.git
-[submodule "mcpelauncher-linker"]
-	path = mcpelauncher-linker
-	url = ../mcpelauncher-linker.git
-[submodule "mcpelauncher-webview"]
-	path = mcpelauncher-webview
-	url = https://github.com/freundTech/mcpelauncher-webview
-[submodule "libjnivm"]
-	path = libjnivm
-	url = https://github.com/ChristopherHX/libjnivm.git
-[submodule "mcpelauncher-errorwindow"]
-	path = mcpelauncher-errorwindow
-	url = https://github.com/minecraft-linux/mcpelauncher-errorwindow.git
-[submodule "axml-parser"]
-	path = axml-parser
-	url = ../../MCMrARM/axml-parser.git
-[submodule "mcpelauncher-apkinfo"]
-	path = mcpelauncher-apkinfo
-	url = ../mcpelauncher-apkinfo.git
-[submodule "mcpelauncher-extract"]
-	path = mcpelauncher-extract
-	url = ../mcpelauncher-extract.git
-[submodule "google-play-api"]
-	path = google-play-api
-	url = ../Google-Play-API.git
-[submodule "playdl-signin-ui-qt"]
-	path = playdl-signin-ui-qt
-	url = ../playdl-signin-ui-qt.git
-[submodule "mcpelauncher-ui-qt"]
-	path = mcpelauncher-ui-qt
-	url = ../mcpelauncher-ui-qt.git
-[submodule "msa"]
-	path = msa
-	url = ../msa.git
-[submodule "msa-daemon"]
-	path = msa-daemon
-	url = ../msa-daemon.git
-[submodule "msa-daemon-client"]
-	path = msa-daemon-client
-	url = ../msa-daemon-client.git
-[submodule "msa-ui-gtk"]
-	path = msa-ui-gtk
-	url = ../msa-ui-gtk.git
-[submodule "msa-ui-qt"]
-	path = msa-ui-qt
-	url = ../msa-ui-qt.git
+[submodule "mcpelauncher-linker/bionic"]
+	path = mcpelauncher-linker/bionic
+	url = https://github.com/minecraft-linux/android_bionic.git
+[submodule "mcpelauncher-linker/core"]
+	path = mcpelauncher-linker/core
+	url = https://android.googlesource.com/platform/system/core
+[submodule "fake-jni/libunwind"]
+	path = fake-jni/libunwind
+	url = https://github.com/libunwind/libunwind.git
+[submodule "fake-jni/libffi"]
+	path = fake-jni/libffi
+	url = https://github.com/libffi/libffi.git
+[submodule "fake-jni/CX"]
+	path = fake-jni/CX
+	url = https://github.com/minecraft-linux/CX.git
