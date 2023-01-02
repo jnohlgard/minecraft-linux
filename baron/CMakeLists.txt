@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(baron VERSION 0.1.0)
+project(baron VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-
-if(${BUILD_BARON_DEBUG})
-    set(CMAKE_BUILD_TYPE Debug)
+if (BUILD_BARON_DEBUG)
     set(compiler_flags "\
         -g\
         -fstandalone-debug\
@@ -14,44 +11,57 @@ if(${BUILD_BARON_DEBUG})
         -fno-omit-frame-pointer\
         -DBARON_DEBUG\
     ")
-else()
-    set(CMAKE_BUILD_TYPE Release)
+else ()
     set(compiler_flags "-O3")
-endif()
+endif ()
 
-if(${BUILD_BARON_ASAN})
- string(APPEND compiler_flags " -fsanitize=address")
-endif()
+if (BUILD_BARON_ASAN)
+    string(APPEND compiler_flags " -fsanitize=address")
+endif ()
 
-if(${BUILD_BARON_UBSAN})
- string(APPEND compiler_flags " -fsanitize=undefined")
-endif()
+if (BUILD_BARON_UBSAN)
+    string(APPEND compiler_flags " -fsanitize=undefined")
+endif ()
 
-set(BUILD_FAKE_JNI_DEBUG OFF CACHE BOOL "")
-set(BUILD_FAKE_JNI_TESTS OFF CACHE BOOL "")
-set(BUILD_FAKE_JNI_EXAMPLES OFF CACHE BOOL "")
-
-string(APPEND CMAKE_CXX_FLAGS " ${compiler_flags}")
-string(APPEND CMAKE_C_FLAGS " ${compiler_flags}")
-
-file(GLOB_RECURSE BARON_SRC "src/**.cpp")
-add_library(baron STATIC ${BARON_SRC})
-target_link_libraries(baron fake-jni)
+add_library(baron STATIC
+        src/impl/env/jni.cpp
+        src/impl/env/jvmti.cpp
+        src/impl/interface/invoke/misc.cpp
+        src/impl/interface/invoke/thread.cpp
+        src/impl/interface/jvmti/jvmti.cpp
+        src/impl/interface/native/array.cpp
+        src/impl/interface/native/buffer.cpp
+        src/impl/interface/native/field.cpp
+        src/impl/interface/native/method.cpp
+        src/impl/interface/native/misc.cpp
+        src/impl/interface/native/native.cpp
+        src/impl/interface/native/object.cpp
+        src/impl/interface/native/ref.cpp
+        src/impl/interface/native/reflect.cpp
+        src/impl/interface/native/string.cpp
+        src/impl/class.cpp
+        src/impl/field.cpp
+        src/impl/jni_env.cpp
+        src/impl/jvm.cpp
+        src/impl/method.cpp
+        src/util/util.cpp
+        )
+target_link_libraries(baron PUBLIC fake-jni)
 target_include_directories(baron PUBLIC include)
 target_compile_options(baron PUBLIC
-    -Wall
-    -Wextra
-#    -Werror
-    -pedantic
-    -Wno-unused-parameter
-    -Wno-unused-function
-    -Wno-nested-anon-types
-    -Wno-vla-extension
-    -Wno-zero-length-array
-)
+        -Wall
+        -Wextra
+        #    -Werror
+        -pedantic
+        -Wno-unused-parameter
+        -Wno-unused-function
+        -Wno-nested-anon-types
+        -Wno-vla-extension
+        -Wno-zero-length-array
+        )
 
-set(BUILD_BARON_EXAMPLES ON CACHE BOOL "Enables baron example")
+option(BUILD_BARON_EXAMPLES "Enables baron example" ON)
 
-if(${BUILD_BARON_EXAMPLES})
+if (BUILD_BARON_EXAMPLES)
     add_subdirectory(example)
-endif()
+endif ()
